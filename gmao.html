@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>SecteurPro - Console Master</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* LE STYLE RUSTIQUE MAIS COUSTAUD */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #0f172a; color: #e2e8f0; }
+        h2 { margin-top: 10px; margin-bottom: 5px; }
+        .signature { color: #64748b; font-size: 13px; margin-bottom: 25px; font-weight: 500; }
+        
+        /* Bouton Retour au Portail */
+        .btn-portail {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+        .btn-portail:hover {
+            background: #334155;
+            border-color: #3b82f6;
+        }
+        
+        /* Barre d'outils générale */
+        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #334155; }
+        
+        /* Onglets */
+        .tabs { display: flex; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; transition: 0.2s; }
+        .tab-btn.active { background: #3b82f6; color: white; }
+        
+        /* Panneaux */
+        .panel { display: none; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
+        .panel.active { display: block; }
+        
+        /* Formulaires & Inputs */
+        select, input, textarea { background: #0f172a; border: 1px solid #475569; color: white; padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 15px; font-size: 14px; }
+        select:focus, input:focus, textarea:focus { border-color: #3b82f6; outline: none; }
+        
+        /* Boutons */
+        button { background: #3b82f6; color: white; border: none; padding: 11px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        
+        /* Tableaux */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border-bottom: 1px solid #334155; padding: 12px; text-align: left; vertical-align: top; }
+        th { color: #94a3b8; text-transform: uppercase; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+        
+        /* Badges de Statut */
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; cursor: pointer; border: none; }
+        .badge-attente { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
+        .badge-cours { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .badge-resolu { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+
+        /* Utilitaires de disposition */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <!-- BOUTON RETOUR AU PORTAIL -->
+    <div>
+        <a href="index.html" class="btn-portail">
+            <i class="fa-solid fa-house text-blue-400"></i> Retour au Portail Central
+        </a>
+    </div>
+
+    <h2>Console SecteurPro Master</h2>
+    <div class="signature">
+        <i class="fa-solid fa-user-pen"></i> Conception & Développement — Thierry de Vergezac
+    </div>
+
+    <!-- UTILS DE SAUVEGARDE ET RESTAURATION GENERALE -->
+    <div class="toolbar">
+        <button onclick="exporterTout()" style="background: #8b5cf6;"><i class="fa-solid fa-download"></i> Sauvegarder base (JSON)</button>
+        <label style="background: #f59e0b; padding: 11px 18px; border-radius: 6px; cursor: pointer; color: white; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-upload"></i> Importer base
+            <input type="file" onchange="importerTout(event)" style="display:none;">
+        </label>
+    </div>
+
+    <!-- NAVIGATION PAR ONGLETS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showPanel('p-secteurs')"><i class="fa-solid fa-layer-group"></i> Secteurs</button>
+        <button class="tab-btn" onclick="showPanel('p-agents')"><i class="fa-solid fa-users"></i> Agents</button>
+        <button class="tab-btn" onclick="showPanel('p-travaux')"><i class="fa-solid fa-screwdriver-wrench"></i> Travaux</button>
+        <button class="tab-btn" onclick="showPanel('p-suivi')"><i class="fa-solid fa-list-check"></i> Suivi & Interventions</button>
+    </div>
+
+    <!-- BRIQUE 2 : GESTION DES SECTEURS -->
+    <div id="p-secteurs" class="panel active">
+        <h3>Gestion des Secteurs</h3>
+        <textarea id="excel-paste" rows="3" placeholder="Copie-colle ici tes lignes Excel directement (Bâtiment / Étage / Local)..."></textarea>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="parserExcel()"><i class="fa-solid fa-file-import"></i> Convertir et Ajouter</button>
+            <button onclick="viderBaseSecteurs()" style="background: #ef4444;"><i class="fa-solid fa-trash-can"></i> Tout supprimer</button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr><th>Bâtiment</th><th>Étage</th><th>Local</th><th style="width: 80px;">Action</th></tr>
+                </thead>
+                <tbody id="secteur-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- BRIQUE 3 : GESTION DES AGENTS -->
+    <div id="p-agents" class="panel">
+        <h3>Gestion des Agents</h3>
+        <div class="grid-2">
+            <input type="text" id="agent-nom" placeholder="Nom">
+            <input type="text" id="agent-prenom" placeholder="Prénom">
+        </div>
+        <div class="grid-2">
+            <input type="text" id="agent-fonction" placeholder="Fonction">
+            <input type="email" id="agent-mail" placeholder="Adresse email (Outlook)">
+        </div>
+        <button onclick="ajouterAgent()"><i class="fa-solid fa-user-plus"></i> Ajouter l'agent</button>
+        
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Nom</th><th>Prénom</th><th>Fonction</th><th>Email</th><th style="width: 80px;">Action</th></tr>
+                </thead>
+                <tbody id="agent-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- BRIQUE 4 & 5 : MOTEUR DE TRAVAUX (TICKETS) -->
+    <div id="p-travaux" class="panel">
+        <h3>Création Bon de Travaux</h3>
+        
+        <!-- PARAMÉTRAGE DU DESTINATAIRE EN COPIE (CC) POUR L'ÉTABLISSEMENT -->
+        <div style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px;">
+            <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">
+                <i class="fa-solid fa-user-gear"></i> Paramétrage de l'établissement (Destinataire en Copie / CC - ex: Secrétaire Général)
+            </label>
+            <div style="display: flex; gap: 10px;">
+                <input type="email" id="config-cc" placeholder="Email en copie (ex: secretaire.general@etablissement.fr)" style="margin-bottom: 0;">
+                <button onclick="sauvegarderCC()" style="background: #10b981; white-space: nowrap;"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+            </div>
+        </div>
+
+        <textarea id="panne-desc" placeholder="Description détaillée de la panne à traiter..." rows="4"></textarea>
+        
+        <div class="grid-2">
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Secteur / Localisation</label>
+                <select id="select-secteur-panne"></select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Agent assigné</label>
+                <select id="select-agent-panne"></select>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+            <button onclick="creerIntervention()"><i class="fa-solid fa-file-pdf"></i> Générer Fiche & Préparer Mail</button>
+        </div>
+    </div>
+
+    <!-- BRIQUE 6 : TABLEAU DE SUIVI DES INTERVENTIONS -->
+    <div id="p-suivi" class="panel">
+        <h3>Tableau de Suivi des Interventions</h3>
+        <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;">
+            <div>
+                <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 3px;">Filtrer par statut :</label>
+                <select id="filtre-statut" onchange="afficherSuivi()" style="margin-bottom:0; width: 200px;">
+                    <option value="TOUS">Tous les statuts</option>
+                    <option value="En attente">En attente</option>
+                    <option value="En cours">En cours</option>
+                    <option value="Résolu">Résolu</option>
+                </select>
+            </div>
+            <button onclick="viderSuivi()" style="background: #ef4444; margin-top: 18px;"><i class="fa-solid fa-trash-can"></i> Vider l'historique</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>N° Bon</th>
+                        <th>Date</th>
+                        <th>Localisation</th>
+                        <th>Agent Assigné</th>
+                        <th>Description</th>
+                        <th>Statut (Cliquer pour changer)</th>
+                        <th>Commentaires libres</th>
+                        <th style="width: 80px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="suivi-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Logique centralisée d'affichage des onglets
+        function showPanel(id) {  
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                if(btn.getAttribute('onclick').includes(id)) btn.classList.add('active');
+            });
+
+            if(id === 'p-travaux') {
+                rafraichirListes();
+                chargerCC();
+            }
+            if(id === 'p-suivi') afficherSuivi();
+        }
+
+        // Brique 2 (Secteurs) - Parseur Excel
+        function parserExcel() {
+            let SECTEURS = JSON.parse(localStorage.getItem('secteurs_db') || '[]');
+            const texteColle = document.getElementById('excel-paste').value;
+            
+            if(!texteColle.trim()) { alert("Veuillez coller des données avant de convertir !"); return; }
+
+            texteColle.split('\n').forEach(l => {
+                let c = l.split('\t');
+                if(c.length >= 3) {
+                    SECTEURS.push({bat: c[0].trim(), etage: c[1].trim(), local: c[2].trim()});
+                }
+            });
+            localStorage.setItem('secteurs_db', JSON.stringify(SECTEURS));
+            document.getElementById('excel-paste').value = '';
+            afficherSecteurs();
+        }
+
+        function afficherSecteurs() {  
+            document.getElementById('secteur-body').innerHTML = JSON.parse(localStorage.getItem('secteurs_db')||'[]').map((s,i) => `
+                <tr>
+                    <td>${s.bat}</td><td>${s.etage}</td><td>${s.local}</td>
+                    <td><button onclick="supprimerLigne(${i})" style="background: #ef4444; padding: 5px 10px;"><i class="fa-solid fa-xmark"></i></button></td>
+                </tr>`).join('');
+        }
+
+        function supprimerLigne(i) {  
+            let s = JSON.parse(localStorage.getItem('secteurs_db'));  
+            s.splice(i,1);  
+            localStorage.setItem('secteurs_db', JSON.stringify(s));  
+            afficherSecteurs();  
+        }
+
+        function viderBaseSecteurs() {  
+            if(confirm("Voulez-vous vraiment vider toute la liste des secteurs ?")) {
+                localStorage.setItem('secteurs_db', '[]');  
+                afficherSecteurs();  
+            }
+        }
+
+        // Brique 3 (Agents)
+        function ajouterAgent() {
+            let AGENTS = JSON.parse(localStorage.getItem('agents_db') || '[]');
+            const nom = document.getElementById('agent-nom').value.trim();
+            const prenom = document.getElementById('agent-prenom').value.trim();
+            const fonction = document.getElementById('agent-fonction').value.trim();
+            const mail = document.getElementById('agent-mail').value.trim();
+
+            if(nom && prenom) {
+                AGENTS.push({
+                    id: 'AG-' + (AGENTS.length + 1), 
+                    nom: nom, 
+                    prenom: prenom, 
+                    fonction: fonction || '-', 
+                    mail: mail || 'non-renseigne@mail.com'
+                });
+                localStorage.setItem('agents_db', JSON.stringify(AGENTS));
+                
+                document.getElementById('agent-nom').value = '';
+                document.getElementById('agent-prenom').value = '';
+                document.getElementById('agent-fonction').value = '';
+                document.getElementById('agent-mail').value = '';
+                
+                afficherAgents();
+            } else {
+                alert("Le Nom et le Prénom de l'agent sont obligatoires !");
+            }
+        }
+
+        function afficherAgents() {  
+            document.getElementById('agent-body').innerHTML = JSON.parse(localStorage.getItem('agents_db')||'[]').map((a,i) => `
+                <tr>
+                    <td>${a.id}</td><td>${a.nom}</td><td>${a.prenom}</td><td>${a.fonction}</td><td>${a.mail}</td>
+                    <td><button onclick="supprimerAgent(${i})" style="background: #ef4444; padding: 5px 10px;"><i class="fa-solid fa-xmark"></i></button></td>
+                </tr>`).join('');  
+        }
+
+        function supprimerAgent(i) {  
+            let a = JSON.parse(localStorage.getItem('agents_db'));  
+            a.splice(i,1);  
+            localStorage.setItem('agents_db', JSON.stringify(a));  
+            afficherAgents();  
+        }
+
+        // Configuration de la copie (CC)
+        function sauvegarderCC() {
+            const ccMail = document.getElementById('config-cc').value.trim();
+            localStorage.setItem('config_cc_mail', ccMail);
+            alert("Adresse en copie (CC) enregistrée pour l'établissement !");
+        }
+
+        function chargerCC() {
+            const savedCC = localStorage.getItem('config_cc_mail') || '';
+            document.getElementById('config-cc').value = savedCC;
+        }
+
+        // Rafraichir les listes déroulantes
+        function rafraichirListes() {
+            const secteurs = JSON.parse(localStorage.getItem('secteurs_db')||'[]');
+            const agents = JSON.parse(localStorage.getItem('agents_db')||'[]');
+
+            document.getElementById('select-secteur-panne').innerHTML = secteurs.length > 0 
+                ? secteurs.map(s => `<option value="${s.bat} - ${s.local}">${s.bat} - ${s.local} (${s.etage})</option>`).join('')
+                : '<option value="">Aucun secteur disponible (à créer)</option>';
+            
+            document.getElementById('select-agent-panne').innerHTML = agents.length > 0
+                ? agents.map(a => `<option value="${a.mail}|${a.nom} ${a.prenom}">${a.nom} ${a.prenom}</option>`).join('')
+                : '<option value="">Aucun agent disponible (à créer)</option>';
+        }
+
+        // Brique 4, 5 & 6 : Création d'intervention, Impression PDF, Enregistrement Suivi et Mail Outlook avec CC
+        function creerIntervention() {  
+            const desc = document.getElementById('panne-desc').value.trim();
+            const secteur = document.getElementById('select-secteur-panne').value;
+            const selectAgentVal = document.getElementById('select-agent-panne').value;
+
+            if(!desc || !secteur || !selectAgentVal) { alert("Tous les champs (Description, Local et Agent) sont requis !"); return; }
+
+            const [mail, agentNom] = selectAgentVal.split('|');
+            const numeroBon = Math.floor(100 + Math.random() * 900);
+            const dateJour = new Date().toLocaleDateString();
+
+            // 1. Enregistrement dans l'historique du Suivi (avec champ commentaire initialisé vide)
+            let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+            const nouvelleIntervention = {
+                id: numeroBon,
+                date: dateJour,
+                secteur: secteur,
+                agent: agentNom,
+                desc: desc,
+                statut: 'En attente',
+                motif: '',
+                commentaire: ''
+            };
+            interventions.unshift(nouvelleIntervention);
+            localStorage.setItem('interventions_db', JSON.stringify(interventions));
+
+            // 2. Génération de la fenêtre d'impression pour le PDF
+            let win = window.open('','_blank');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Bon de Travaux n°${numeroBon}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                        .header { border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px; }
+                        .content { border: 1px solid #ccc; padding: 20px; border-radius: 8px; }
+                        h1 { color: #3b82f6; margin: 0 0 10px 0; }
+                        .label { font-weight: bold; color: #555; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Bon de Travaux n°${numeroBon}</h1>
+                        <p style="margin:0;">Date d'émission : ${dateJour}</p>
+                    </div>
+                    <div class="content">
+                        <p><span class="label">Agent affecté :</span> ${agentNom}</p>
+                        <p><span class="label">Localisation :</span> ${secteur}</p>
+                        <p><span class="label">Description de l'intervention :</span></p>
+                        <p style="background: #f9f9f9; padding: 15px; border-left: 5px solid #3b82f6; margin: 10px 0; white-space: pre-wrap;">${desc}</p>
+                    </div>
+                    <div style="margin-top:50px; border-top:1px solid #ccc; padding-top:10px; text-align:right;">
+                        <p>Signature de l'encadrement</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            win.document.close();
+            win.print();
+
+            // 3. Préparation du lien mailto Outlook avec intégration dynamique du CC sécurisée
+            const ccMail = localStorage.getItem('config_cc_mail') || '';
+            const sujet = encodeURIComponent(`Bon de travaux n°${numeroBon} - ${secteur}`);
+            const corps = encodeURIComponent(`Bonjour ${agentNom},\n\nUn nouveau bon de travaux n°${numeroBon} a été généré pour votre secteur (${secteur}).\n\nPensez à glisser le PDF téléchargé de l'intervention dans ce message.\n\nCordialement,\nL'administration.`);
+            
+            let mailtoLink = `mailto:${mail}?subject=${sujet}&body=${corps}`;
+            if(ccMail.trim() !== '') {
+                mailtoLink += `&cc=${encodeURIComponent(ccMail.trim())}`;
+            }
+
+            window.location.href = mailtoLink;
+
+            // Réinitialisation du champ description et redirection vers le suivi
+            document.getElementById('panne-desc').value = '';
+            showPanel('p-suivi');
+        }
+
+        // Affichage et gestion du Tableau de Suivi
+        function afficherSuivi() {
+            const filtre = document.getElementById('filtre-statut').value;
+            let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+
+            if(filtre !== 'TOUS') {
+                interventions = interventions.filter(item => item.statut === filtre);
+            }
+
+            const tbody = document.getElementById('suivi-body');
+            if(interventions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">Aucune intervention enregistrée.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = interventions.map((item, index) => {
+                let badgeClass = 'badge-attente';
+                if(item.statut === 'En cours') badgeClass = 'badge-cours';
+                if(item.statut === 'Résolu') badgeClass = 'badge-resolu';
+
+                let motifHtml = item.motif ? `<br><small style="color: #cbd5e1; font-style: italic; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-circle-info"></i> ${item.motif}</small>` : '';
+
+                let commentaireVal = item.commentaire || '';
+
+                return `
+                    <tr>
+                        <td><strong>#${item.id}</strong></td>
+                        <td>${item.date}</td>
+                        <td>${item.secteur}</td>
+                        <td>${item.agent}</td>
+                        <td style="max-width: 220px; word-break: break-word;">${item.desc}</td>
+                        <td>
+                            <button class="badge ${badgeClass}" onclick="changerStatut(${item.id})" title="Cliquer pour basculer le statut">
+                                ${item.statut} <i class="fa-solid fa-rotate"></i>
+                            </button>
+                            ${motifHtml}
+                        </td>
+                        <td>
+                            <textarea rows="2" placeholder="Ajouter une note..." oninput="mettreAJourCommentaire(${item.id}, this.value)" style="margin-bottom:0; font-size: 13px;">${commentaireVal}</textarea>
+                        </td>
+                        <td><button onclick="supprimerIntervention(${item.id})" style="background: #ef4444; padding: 5px 10px;"><i class="fa-solid fa-trash"></i></button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Sauvegarde automatique en direct des commentaires saisis
+        function mettreAJourCommentaire(id, texte) {
+            let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+            const index = interventions.findIndex(item => item.id === id);
+            if(index !== -1) {
+                interventions[index].commentaire = texte;
+                localStorage.setItem('interventions_db', JSON.stringify(interventions));
+            }
+        }
+
+        // Bascule cyclique du statut : En attente -> En cours (avec motif) -> Résolu -> En attente
+        function changerStatut(id) {
+            let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+            const index = interventions.findIndex(item => item.id === id);
+            
+            if(index !== -1) {
+                if(interventions[index].statut === 'En attente') {
+                    interventions[index].statut = 'En cours';
+                    const motifSaisi = prompt("Précisez le motif 'En cours' (ex: Pièce commandée, En attente prestataire...) :", interventions[index].motif || "Pièce commandée");
+                    interventions[index].motif = motifSaisi !== null ? motifSaisi.trim() : "En cours";
+                } else if(interventions[index].statut === 'En cours') {
+                    interventions[index].statut = 'Résolu';
+                    interventions[index].motif = '';
+                } else {
+                    interventions[index].statut = 'En attente';
+                    interventions[index].motif = '';
+                }
+                localStorage.setItem('interventions_db', JSON.stringify(interventions));
+                afficherSuivi();
+            }
+        }
+
+        function supprimerIntervention(id) {
+            if(confirm("Voulez-vous supprimer cette intervention du suivi ?")) {
+                let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+                interventions = interventions.filter(item => item.id !== id);
+                localStorage.setItem('interventions_db', JSON.stringify(interventions));
+                afficherSuivi();
+            }
+        }
+
+        function viderSuivi() {
+            if(confirm("Voulez-vous vraiment effacer tout l'historique des interventions ?")) {
+                localStorage.setItem('interventions_db', '[]');
+                afficherSuivi();
+            }
+        }
+
+        // Système d'exportation global (Backup JSON incluant le paramètre CC et les commentaires)
+        function exporterTout() {
+            const data = {
+                secteurs: JSON.parse(localStorage.getItem('secteurs_db') || '[]'),
+                agents: JSON.parse(localStorage.getItem('agents_db') || '[]'),
+                interventions: JSON.parse(localStorage.getItem('interventions_db') || '[]'),
+                configCC: localStorage.getItem('config_cc_mail') || ''
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'SecteurPro_Master_Backup.json';
+            a.click();
+        }
+
+        function importerTout(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(data.secteurs && data.agents) {
+                        localStorage.setItem('secteurs_db', JSON.stringify(data.secteurs));
+                        localStorage.setItem('agents_db', JSON.stringify(data.agents));
+                        if(data.interventions) localStorage.setItem('interventions_db', JSON.stringify(data.interventions));
+                        if(data.configCC) localStorage.setItem('config_cc_mail', data.configCC);
+                        alert("Importation réussie de la base SecteurPro !");
+                        location.reload();
+                    } else {
+                        alert("Format de fichier invalide.");
+                    }
+                } catch(err) {
+                    alert("Erreur lors de la lecture du fichier de sauvegarde.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Chargement initial au démarrage
+        afficherSecteurs(); 
+        afficherAgents();
+        chargerCC();
+    </script>
+</body>
+</html>

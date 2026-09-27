@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Portail — Gestion des Collèges (Manche)</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #002266;
+            color: #ffffff;
+            margin: 0;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #001144;
+            border: 2px solid #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #a9c6ff;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: #002266;
+            border: 2px solid #4466aa;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card:hover {
+            background-color: #003388;
+            border-color: #ffaa00;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(255,170,0,0.3);
+        }
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #ffaa00;
+        }
+        .card p {
+            font-size: 13px;
+            color: #a9c6ff;
+            margin: 0;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 13px;
+            color: #a9c6ff;
+            border-top: 1px solid #4466aa;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Portail Central — Collèges de la Manche</h1>
+        <p class="subtitle">Sélectionnez le module à lancer pour vos interventions</p>
+
+        <div class="grid">
+            <!-- 1. Gestion des produits -->
+            <a href="sanistock.html" class="card">
+                <div>
+                    <h2>Gestion de stock produits</h2>
+                    <p>Suivi des références, stocks et fiches de données.</p>
+                </div>
+            </a>
+
+            <!-- 2. GMAO -->
+            <a href="gmao.html" class="card">
+                <div>
+                    <h2>GMAO</h2>
+                    <p>Gestion de la maintenance assistée par ordinateur.</p>
+                </div>
+            </a>
+
+            <!-- 3. Fiche de renseignement -->
+            <a href="renseignement.html" class="card">
+                <div>
+                    <h2>Fiche de renseignement</h2>
+                    <p>Informations générales et suivi agent de maintenance.</p>
+                </div>
+            </a>
+
+            <!-- 4. Répertoire -->
+            <a href="repertoire.html" class="card">
+                <div>
+                    <h2>Répertoire</h2>
+                    <p>Contacts des établissements et référents du département.</p>
+                </div>
+            </a>
+
+            <!-- 5. Fiche de suivi -->
+            <a href="suivi.html" class="card">
+                <div>
+                    <h2>Fiches de suivi</h2>
+                    <p>Suivi des interventions et historiques réguliers.</p>
+                </div>
+            </a>
+
+            <!-- 6. Plan d'action ergonomie -->
+            <a href="ergonomie.html" class="card">
+                <div>
+                    <h2>Plan d'action ergonomie</h2>
+                    <p>Audit, risques, cotations et préconisations par collège.</p>
+                </div>
+            </a>
+
+            <!-- 7. Secteur Pro -->
+            <a href="secteurpro.html" class="card">
+                <div>
+                    <h2>Secteur Pro</h2>
+                    <p>Gestion spécifique et données professionnelles.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="footer-note">
+            Baron de Vegerezac — Référent Installations & Santé/Sécurité (Manche)
+        </div>
+    </div>
+
+</body>
+</html>

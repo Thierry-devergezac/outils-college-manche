@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaniStock Pro - Gestion de l'Inventaire Sanitaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            background-image: radial-gradient(circle at top right, #1e293b, #0b0f19);
+            color: #e2e8f0;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .input-field {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            outline: none;
+        }
+
+        /* Styles spécifiques aux Pictogrammes de danger */
+        .picto-checkbox {
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .picto-checkbox.active {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Barre de pH colorée */
+        .ph-gradient-bar {
+            height: 8px;
+            background: linear-gradient(to right, #ef4444 0%, #fbbf24 35%, #10b981 50%, #3b82f6 65%, #8b5cf6 100%);
+            border-radius: 9999px;
+            position: relative;
+        }
+
+        .ph-cursor {
+            position: absolute;
+            top: -4px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            border: 2px solid #0b0f19;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            transition: left 0.2s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- BOUTON RETOUR AU PORTAIL -->
+        <div class="mb-4">
+            <a href="index.html" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition-all border border-white/10 shadow-md">
+                <i class="fa-solid fa-house text-emerald-400"></i> Retour au Portail Central
+            </a>
+        </div>
+
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-white/10 pb-6">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mt-2">
+                    SaniStock <span class="text-emerald-400">Pro</span>
+                </h1>
+                <p class="text-slate-400 text-xs md:text-sm mt-1">
+                    Interface d'inventaire sanitaire décentralisée — Conception Thierry de Vergezac
+                </p>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <button onclick="exportToCSV()" class="flex-1 md:flex-none px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-blue-950/40 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-excel text-base"></i> Exporter vers Excel (CSV)
+                </button>
+                <button onclick="sauvegarderBase()" class="flex-1 md:flex-none px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-slate-950/40 flex items-center justify-center gap-2" title="Sauvegarder JSON">
+                    <i class="fa-solid fa-download"></i> Sauvegarder (JSON)
+                </button>
+                <input type="file" id="import-file" style="display:none" onchange="restaurerBase(event)" accept=".json">
+                <button onclick="document.getElementById('import-file').click()" class="flex-1 md:flex-none px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-slate-950/40 flex items-center justify-center gap-2" title="Restaurer JSON">
+                    <i class="fa-solid fa-upload"></i> Restaurer (JSON)
+                </button>
+                <button onclick="ouvrirFormulaireInsertion()" class="flex-1 md:flex-none px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold rounded-lg transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus text-base"></i> Nouveau Produit
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h2 class="text-xl font-bold flex items-center gap-2 text-white">
+                            <i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Liste des Produits Enregistrés
+                        </h2>
+                        <div class="relative w-full sm:w-64">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="search-input" oninput="filtrerProduits()" placeholder="Rechercher produit, fabricant..." class="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-white/5">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white/5 border-b border-white/10 text-xs text-slate-400 uppercase tracking-wider font-semibold">
+                                    <th class="p-4">N° ID</th>
+                                    <th class="p-4">Produit / Fabricant</th>
+                                    <th class="p-4">Conditionnement</th>
+                                    <th class="p-4 text-center">pH</th>
+                                    <th class="p-4">Pictogrammes</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body" class="divide-y divide-white/5 text-sm text-slate-300">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-4" id="editor-panel">
+                <div class="glass-card p-6 rounded-2xl border-t-4 border-emerald-500 sticky top-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="form-title" class="text-lg font-bold text-white">
+                            <i class="fa-solid fa-pen-to-square text-emerald-400 mr-1"></i> Insertion Produit
+                        </h2>
+                        <span id="form-mode-badge" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                            Nouveau
+                        </span>
+                    </div>
+
+                    <form id="product-form" onsubmit="validerFormulaire(event)" class="space-y-4">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-bold uppercase text-slate-500 tracking-wider">N° ID</label>
+                            <input type="text" id="TxtNumProduit" readonly class="input-field p-2 rounded-lg text-slate-400 text-xs font-mono cursor-not-allowed">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Nom du Produit *</label>
+                                <input type="text" id="TxtNomProduit" required placeholder="Ex: Sani-Cid" class="input-field p-2.5 rounded-lg text-xs text-white">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Fabricant</label>
+                                <input type="text" id="TxtFabricant" placeholder="Ex: Diversey" class="input-field p-2.5 rounded-lg text-xs text-white">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">État Physique</label>
+                                <select id="ComboBoxEtat" class="input-field p-2.5 rounded-lg text-xs text-white">
+                                    <option value="">-- Choisir --</option>
+                                    <option value="Liquide">Liquide</option>
+                                    <option value="Solide">Solide</option>
+                                    <option value="Gazeux">Gazeux</option>
+                                    <option value="En gel">En gel</option>
+                                    <option value="En poudre">En poudre</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Conditionnement</label>
+                                <select id="ComboBoxConditionnement" class="input-field p-2.5 rounded-lg text-xs text-white">
+                                    <option value="">-- Choisir --</option>
+                                    <option value="Bidon 1L">Bidon 1L</option>
+                                    <option value="Bidon de 5 litres">Bidon de 5 litres</option>
+                                    <option value="Bidon de 10 litres">Bidon de 10 litres</option>
+                                    <option value="Pulvérisateur 750ml">Pulvérisateur 750ml</option>
+                                    <option value="Flacon">Flacon</option>
+                                    <option value="Seaux de 5 litres">Seaux de 5 litres</option>
+                                    <option value="Sac">Sac</option>
+                                    <option value="Carton">Carton</option>
+                                    <option value="Boite">Boite</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">ACD (Acide)</label>
+                                <input type="text" id="TxtACD" placeholder="Oui/Non" class="input-field p-2 rounded-lg text-xs text-white text-center">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">CMR</label>
+                                <input type="text" id="TxtCMR" placeholder="Oui/Non" class="input-field p-2 rounded-lg text-xs text-white text-center">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Quantité</label>
+                                <input type="text" id="TxtQuantite" placeholder="Ex: 12" class="input-field p-2 rounded-lg text-xs text-white text-center">
+                            </div>
+                        </div>
+
+                        <div class="bg-black/30 p-3 rounded-xl border border-white/5 space-y-2">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400 uppercase font-bold text-[10px]">Potentiel Hydrogène (pH)</span>
+                                <span id="display-ph-val" class="font-mono font-bold text-emerald-400 text-sm">7.0</span>
+                            </div>
+                            <input type="range" id="TxtPH" min="0" max="14" step="0.1" value="7" oninput="changerPH()" class="w-full accent-emerald-500">
+                            <div class="ph-gradient-bar">
+                                <div id="display-ph-cursor" class="ph-cursor" style="left: 50%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Date FDS</label>
+                                <input type="text" id="TxtDateFDS" placeholder="DD/MM/YYYY" class="input-field p-2 rounded-lg text-xs text-white font-mono">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Date Péremption</label>
+                                <input type="text" id="TxtDatePeremption" placeholder="DD/MM/YYYY" class="input-field p-2 rounded-lg text-xs text-white font-mono">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Code UFI</label>
+                                <input type="text" id="TxtCodeUFI" placeholder="Code UFI..." class="input-field p-2 rounded-lg text-xs text-white font-mono uppercase">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Norme</label>
+                                <input type="text" id="TxtNorme" placeholder="Ex: EN 14476" class="input-field p-2 rounded-lg text-xs text-white">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Service Affecté</label>
+                                <input type="text" id="TxtService" placeholder="Ex: Cuisines" class="input-field p-2 rounded-lg text-xs text-white">
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold uppercase text-slate-400">Avertissement</label>
+                                <input type="text" id="TxtAvertissement" placeholder="Ex: Gants requis" class="input-field p-2 rounded-lg text-xs text-white">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-bold uppercase text-slate-400">Observations</label>
+                            <textarea id="TxtObservation" rows="1" placeholder="Notes additionnelles..." class="input-field p-2 rounded-lg text-xs text-white resize-none"></textarea>
+                        </div>
+
+                        <div class="border-t border-white/10 pt-3">
+                            <label class="text-[10px] font-bold uppercase text-slate-400 block mb-2">Pictogrammes de Danger (max 4)</label>
+                            <div class="grid grid-cols-9 gap-1.5" id="picto-checkbox-grid"></div>
+                        </div>
+
+                        <div class="flex gap-2 pt-3">
+                            <button type="button" onclick="resetForm()" class="flex-1 py-2.5 border border-slate-700 hover:bg-white/5 rounded-lg text-xs font-semibold">
+                                Annuler
+                            </button>
+                            <button type="submit" id="BtnValider" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs shadow-lg shadow-emerald-500/20">
+                                Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50"></div>
+
+    <script>
+        let defaultDatabase = [
+            {
+                id: 8,
+                nom: "Sani-Cid Clean",
+                fabricant: "Diversey",
+                etat: "Liquide",
+                acd: "Oui",
+                cmr: "Non",
+                ph: 2.1,
+                avertissement: "Porter lunettes de protection",
+                quantite: "15",
+                conditionnement: "Bidon de 5 litres",
+                dateFds: "12/02/2025",
+                datePeremption: "31/12/2027",
+                norme: "EN 1276",
+                codeUfi: "UFI-H730-V289-Y181",
+                service: "Sanitaires",
+                observation: "Détartrant acide puissant.",
+                pictos: ["Corrosif", "Nocif"]
+            },
+            {
+                id: 9,
+                nom: "Décapant Intensif",
+                fabricant: "Kiehl",
+                etat: "Liquide",
+                acd: "Non",
+                cmr: "Non",
+                ph: 13.5,
+                avertissement: "Gants en nitrile obligatoires",
+                quantite: "8",
+                conditionnement: "Bidon de 10 litres",
+                dateFds: "20/05/2024",
+                datePeremption: "01/01/2028",
+                norme: "EN 1650",
+                codeUfi: "UFI-A921-X930-K299",
+                service: "Sols Externes",
+                observation: "Interdit d'usage à la monobrosse.",
+                pictos: ["Corrosif"]
+            },
+            {
+                id: 10,
+                nom: "Javel Manche Pro",
+                fabricant: "MancheChimie",
+                etat: "Liquide",
+                acd: "Non",
+                cmr: "Non",
+                ph: 11.5,
+                avertissement: "Ne jamais mélanger avec des acides",
+                quantite: "24",
+                conditionnement: "Flacon",
+                dateFds: "18/11/2025",
+                datePeremption: "30/06/2027",
+                norme: "EN 14476",
+                codeUfi: "UFI-J299-W833-Q102",
+                service: "Général",
+                observation: "Désinfectant chloré classique.",
+                pictos: ["Corrosif", "Environnement"]
+            }
+        ];
+
+        let database = JSON.parse(localStorage.getItem('sanistock_db') || JSON.stringify(defaultDatabase));
+
+        const pictogrammesConfig = [
+            { code: "Corrosif", icon: "fa-flask-vial", title: "Corrosif" },
+            { code: "Inflammable", icon: "fa-fire", title: "Inflammable" },
+            { code: "Nocif", icon: "fa-exclamation", title: "Irritant / Nocif" },
+            { code: "Toxique", icon: "fa-skull", title: "Toxique Aigu" },
+            { code: "Danger_sante", icon: "fa-person-dots-from-line", title: "Danger Grave pour la santé" },
+            { code: "Environnement", icon: "fa-tree-city", title: "Polluant" },
+            { code: "Comburant", icon: "fa-circle-radiation", title: "Comburant" },
+            { code: "Gaz", icon: "fa-wind", title: "Gaz sous pression" },
+            { code: "Explosif", icon: "fa-burst", title: "Explosif" }
+        ];
+
+        let LigneEnCours = 0;
+        let selectedPictos = [];
+
+        window.onload = function() {
+            genererGrillePictogrammes();
+            renderTable();
+            resetForm();
+        }
+
+        function sauvegarderLocalStorage() {
+            localStorage.setItem('sanistock_db', JSON.stringify(database));
+        }
+
+        function genererGrillePictogrammes() {
+            const grid = document.getElementById('picto-checkbox-grid');
+            grid.innerHTML = '';
+            pictogrammesConfig.forEach((p) => {
+                const box = document.createElement('div');
+                box.id = `picto-${p.code}`;
+                box.className = "picto-checkbox aspect-square rounded-lg flex flex-col items-center justify-center text-xs relative";
+                box.setAttribute('onclick', `togglePictoSelection('${p.code}')`);
+                box.title = p.title;
+                box.innerHTML = `<i class="fa-solid ${p.icon} text-lg"></i>`;
+                grid.appendChild(box);
+            });
+        }
+
+        function togglePictoSelection(code) {
+            const index = selectedPictos.indexOf(code);
+            const element = document.getElementById(`picto-${code}`);
+            if (index > -1) {
+                selectedPictos.splice(index, 1);
+                element.classList.remove('active');
+            } else {
+                if (selectedPictos.length >= 4) {
+                    showToast("Limite atteinte", "4 pictogrammes max.", "warning");
+                    return;
+                }
+                selectedPictos.push(code);
+                element.classList.add('active');
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            database.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-white/5 transition-colors";
+                let pictoBadges = p.pictos.map(pic => {
+                    const cfg = pictogrammesConfig.find(c => c.code === pic);
+                    return cfg ? `<span class="inline-flex items-center justify-center w-6 h-6 rounded bg-red-500/10 text-red-400 border border-red-500/20 text-xs" title="${cfg.title}"><i class="fa-solid ${cfg.icon}"></i></span>` : '';
+                }).join(' ');
+                let phBadgeClass = (p.ph <= 2.5 || p.ph >= 11.5) ? "text-red-400 font-bold animate-pulse" : (p.ph <= 5 || p.ph >= 9 ? "text-yellow-400" : "text-emerald-400");
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-xs font-bold text-slate-500">${p.id}</td>
+                    <td class="p-4"><div class="font-bold text-white">${p.nom}</div><div class="text-xs text-slate-500">${p.fabricant || 'Inconnu'}</div></td>
+                    <td class="p-4 text-xs"><div class="font-semibold">${p.conditionnement || 'N/A'}</div><div class="text-[10px] text-slate-500">Service : ${p.service || 'Non spécifié'}</div></td>
+                    <td class="p-4 text-center font-mono font-bold ${phBadgeClass}">${p.ph.toFixed(1)}</td>
+                    <td class="p-4"><div class="flex gap-1.5">${pictoBadges}</div></td>
+                    <td class="p-4 text-right">
+                        <div class="flex justify-end gap-2">
+                            <button onclick="chargerPourModification(${p.id})" class="p-2 bg-white/5 hover:bg-emerald-500/20 border border-white/5 rounded-lg transition-all text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="supprimerProduit(${p.id})" class="p-2 bg-white/5 hover:bg-red-500/20 border border-white/5 rounded-lg transition-all text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function resetForm() {
+            LigneEnCours = 0;
+            document.getElementById('product-form').reset();
+            let maxId = database.reduce((max, item) => item.id > max ? item.id : max, 0);
+            document.getElementById('TxtNumProduit').value = maxId + 1;
+            document.getElementById('TxtPH').value = 7.0;
+            changerPH();
+            selectedPictos = [];
+            document.querySelectorAll('.picto-checkbox').forEach(el => el.classList.remove('active'));
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-plus text-emerald-400 mr-1"></i> Insertion Produit';
+            document.getElementById('BtnValider').innerText = "Enregistrer";
+        }
+
+        function ouvrirFormulaireInsertion() {
+            resetForm();
+            document.getElementById('editor-panel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function chargerPourModification(id) {
+            const p = database.find(item => item.id === id);
+            if (!p) return;
+            LigneEnCours = id;
+            document.getElementById('TxtNumProduit').value = p.id;
+            document.getElementById('TxtNomProduit').value = p.nom;
+            document.getElementById('TxtFabricant').value = p.fabricant;
+            document.getElementById('ComboBoxEtat').value = p.etat;
+            document.getElementById('TxtACD').value = p.acd;
+            document.getElementById('TxtCMR').value = p.cmr;
+            document.getElementById('TxtPH').value = p.ph;
+            document.getElementById('TxtAvertissement').value = p.avertissement;
+            document.getElementById('TxtQuantite').value = p.quantite;
+            document.getElementById('ComboBoxConditionnement').value = p.conditionnement;
+            document.getElementById('TxtDateFDS').value = p.dateFds;
+            document.getElementById('TxtDatePeremption').value = p.datePeremption;
+            document.getElementById('TxtNorme').value = p.norme;
+            document.getElementById('TxtCodeUFI').value = p.codeUfi;
+            document.getElementById('TxtService').value = p.service;
+            document.getElementById('TxtObservation').value = p.observation;
+            changerPH();
+            selectedPictos = [...p.pictos];
+            document.querySelectorAll('.picto-checkbox').forEach(el => {
+                const pictoName = el.id.replace('picto-', '');
+                el.classList.toggle('active', selectedPictos.includes(pictoName));
+            });
+            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-yellow-400 mr-1"></i> Modification N° ${p.id}`;
+            document.getElementById('BtnValider').innerText = "Enregistrer";
+            document.getElementById('editor-panel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function validerFormulaire(event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById('TxtNumProduit').value);
+            const payload = {
+                id, nom: document.getElementById('TxtNomProduit').value, fabricant: document.getElementById('TxtFabricant').value,
+                etat: document.getElementById('ComboBoxEtat').value, acd: document.getElementById('TxtACD').value, cmr: document.getElementById('TxtCMR').value,
+                ph: parseFloat(document.getElementById('TxtPH').value), avertissement: document.getElementById('TxtAvertissement').value,
+                quantite: document.getElementById('TxtQuantite').value, conditionnement: document.getElementById('ComboBoxConditionnement').value,
+                dateFds: document.getElementById('TxtDateFDS').value, datePeremption: document.getElementById('TxtDatePeremption').value,
+                norme: document.getElementById('TxtNorme').value, codeUfi: document.getElementById('TxtCodeUFI').value,
+                service: document.getElementById('TxtService').value, observation: document.getElementById('TxtObservation').value,
+                pictos: [...selectedPictos]
+            };
+            if (LigneEnCours === 0) database.push(payload);
+            else database[database.findIndex(item => item.id === LigneEnCours)] = payload;
+            
+            sauvegarderLocalStorage();
+            renderTable();
+            resetForm();
+            showToast("Succès", "Données mises à jour et enregistrées.", "success");
+        }
+
+        function supprimerProduit(id) {
+            if (confirm("Supprimer ce produit ?")) {
+                database = database.filter(item => item.id !== id);
+                sauvegarderLocalStorage();
+                renderTable();
+                showToast("Suppression", "Le produit a été retiré.", "warning");
+            }
+        }
+
+        function changerPH() {
+            const ph = parseFloat(document.getElementById('TxtPH').value);
+            document.getElementById('display-ph-val').innerText = ph.toFixed(1);
+            document.getElementById('display-ph-cursor').style.left = `calc(${(ph / 14) * 100}% - 8px)`;
+        }
+
+        function filtrerProduits() {
+            const val = document.getElementById('search-input').value.toLowerCase();
+            document.querySelectorAll('#inventory-table-body tr').forEach(row => {
+                row.classList.toggle('hidden', !row.textContent.toLowerCase().includes(val));
+            });
+        }
+
+        function exportToCSV() {
+            let csv = "ID;Nom;Fabricant;Picto1;Picto2;Picto3;Picto4;Etat;ACD;CMR;pH;Avertissement;Quantite;Conditionnement;FDS;Peremption;Norme;UFI;Service;Obs\n";
+            database.forEach(p => {
+                csv += `${p.id};${p.nom};${p.fabricant};${p.pictos[0]||""};${p.pictos[1]||""};${p.pictos[2]||""};${p.pictos[3]||""};${p.etat};${p.acd};${p.cmr};${p.ph};${p.avertissement};${p.quantite};${p.conditionnement};${p.dateFds};${p.datePeremption};${p.norme};${p.codeUfi};${p.service};${p.observation}\n`;
+            });
+            const blob = new Blob(["\uFEFF", csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "SaniStock_Export.csv";
+            link.click();
+            showToast("Export", "Fichier Excel (CSV) généré.", "success");
+        }
+
+        function sauvegarderBase() {
+            let nomFichier = prompt("Nom du fichier de sauvegarde JSON :", "SaniStock_Backup.json");
+            if (!nomFichier) return;
+            if (!nomFichier.endsWith('.json')) nomFichier += '.json';
+
+            const blob = new Blob([JSON.stringify(database, null, 2)], {type: "application/json"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = nomFichier;
+            a.click();
+            showToast("Sauvegarde", "Fichier JSON téléchargé avec succès.", "success");
+        }
+
+        function restaurerBase(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    database = JSON.parse(e.target.result);
+                    sauvegarderLocalStorage();
+                    renderTable();
+                    resetForm();
+                    showToast("Restauration", "Base de données importée avec succès.", "success");
+                } catch (err) {
+                    showToast("Erreur", "Le fichier JSON est invalide.", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showToast(t, m, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            let bgColor = "bg-slate-800";
+            if (type === 'success') bgColor = "bg-emerald-600";
+            if (type === 'warning') bgColor = "bg-amber-600";
+            if (type === 'error') bgColor = "bg-red-600";
+            
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-2xl mb-2 text-xs font-semibold flex items-center gap-2 border border-white/10 transition-all`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <div><strong>${t}</strong>: ${m}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+    </script>
+</body>
+</html>

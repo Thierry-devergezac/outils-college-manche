@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>SecteurPro - Affectations Master</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #0f172a; color: #e2e8f0; }
+        h2 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+        /* Style du bouton Retour au Portail */
+        .btn-portail {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+        .btn-portail:hover {
+            background: #334155;
+            border-color: #3b82f6;
+        }
+        .tabs { display: flex; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; }
+        .tab-btn.active { background: #3b82f6; color: white; }
+        .panel { display: none; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
+        .panel.active { display: block; }
+        select, input { background: #0f172a; border: 1px solid #475569; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        button { background: #3b82f6; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border-bottom: 1px solid #334155; padding: 12px; text-align: left; }
+        th { color: #94a3b8; text-transform: uppercase; font-size: 12px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+    </style>
+</head>
+<body>
+
+    <!-- BOUTON RETOUR AU PORTAIL -->
+    <div>
+        <a href="index.html" class="btn-portail">
+            <i class="fa-solid fa-house text-blue-400"></i> Retour au Portail Central
+        </a>
+    </div>
+
+    <h2>SecteurPro : Gestion des Affectations</h2>
+    <p style="color: #64748b; font-size: 14px;">Conçu par Thierry de Vergezac</p>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showPanel(0)">Dictionnaire</button>
+        <button class="tab-btn" onclick="showPanel(1)">Établissement</button>
+        <button class="tab-btn" onclick="showPanel(2)">Agents</button>
+        <button class="tab-btn" onclick="showPanel(3)">Affectations</button>
+        <button class="tab-btn" onclick="showPanel(4)">Export</button>
+    </div>
+
+    <div id="p0" class="panel active">
+        <h3>Gestion du Dictionnaire</h3>
+        <select id="import-type"><option value="bat">Bâtiment</option><option value="etage">Étage</option><option value="secteur">Secteur</option><option value="ref">Référence</option></select>
+        <input type="file" onchange="importerDico(event)">
+        <hr style="border:0; border-top:1px solid #334155; margin: 20px 0;">
+        <input type="text" id="man-val" placeholder="Ajout manuel...">
+        <button onclick="ajouterManuel()">Ajouter</button>
+        <button onclick="reinitialiserDico()" style="background: #ef4444;">Tout effacer</button>
+        <div id="dico-list" style="margin-top:15px;"></div>
+    </div>
+
+    <div id="p1" class="panel">
+        <h3>Création de l'Établissement</h3>
+        <div class="grid-4">
+            <select id="select-bat"><option value="">Bâtiment</option></select>
+            <select id="select-etage"><option value="">Étage</option></select>
+            <select id="select-secteur"><option value="">Secteur</option></select>
+            <select id="select-ref"><option value="">Référence</option></select>
+        </div>
+        <input type="number" id="surf-val" placeholder="Surface m²">
+        <button onclick="ajouterLigneEtab()">Ajouter au stock</button>
+        <table id="etab-table"><thead><tr><th>Bât</th><th>Ét</th><th>Sect</th><th>Ref</th><th>m²</th><th>Action</th></tr></thead><tbody id="etab-body"></tbody></table>
+    </div>
+
+    <div id="p2" class="panel">
+        <h3>Gestion des Agents</h3>
+        <input type="text" id="agent-nom" placeholder="Nom">
+        <input type="text" id="agent-prenom" placeholder="Prénom">
+        <input type="text" id="agent-fonction" placeholder="Fonction">
+        <button onclick="ajouterAgent()">Ajouter l'agent</button>
+        <table id="agent-table"><thead><tr><th>ID</th><th>Nom</th><th>Prénom</th><th>Fonction</th><th>Action</th></tr></thead><tbody id="agent-body"></tbody></table>
+    </div>
+
+    <div id="p3" class="panel">
+        <h3>Affectation des agents</h3>
+        <select id="select-agent-affect"></select>
+        <select id="select-local-affect"></select>
+        <button onclick="ajouterAffectation()">Affecter</button>
+        <table id="affect-table"><thead><tr><th>Agent</th><th>Local</th><th>Ref</th><th>m²</th><th>Temps</th><th>Action</th></tr></thead><tbody id="affect-body"></tbody></table>
+    </div>
+
+    <div id="p4" class="panel">
+        <h3>Exportation</h3>
+        <select id="export-choice">
+            <option value="dico">Dictionnaire</option><option value="etab">Établissement</option>
+            <option value="agents">Agents</option><option value="affect">Affectations</option>
+        </select>
+        <button onclick="exporterCSV()">Exporter en .csv</button>
+    </div>
+
+    <script>
+        const CADENCES = { 'A': { type: 'm2', val: 180 }, 'C': { type: 'm2', val: 210 }, 'D': { type: 'm2', val: 55 }, 'E': { type: 'm2', val: 310 }, 'F': { type: 'm2', val: 350 }, 'G': { type: 'm2', val: 200 }, 'H': { type: 'm2', val: 149.85 }, 'I': { type: 'm2', val: 50 }, 'J': { type: 'm2', val: 180 }, 'K': { type: 'm2', val: 130 }, 'L': { type: 'elem', val: 0.08 }, 'M': { type: 'elem', val: 0.13 } };
+        let DATA = JSON.parse(localStorage.getItem('secteurPro_master') || '{"dico":[], "etab":[], "agents":[], "affect":[]}');
+        
+        function saveAll() { localStorage.setItem('secteurPro_master', JSON.stringify(DATA)); }
+        
+        function showPanel(index) { 
+            document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === index)); 
+            document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === index)); 
+            if (index === 1) majListesEtab(); 
+            if (index === 3) majListesAffectation(); 
+        }
+
+        // --- Logique Dico ---
+        function importerDico(e) { const reader = new FileReader(); const type = document.getElementById('import-type').value; reader.onload = function(evt) { evt.target.result.split(/\r?\n/).forEach(line => { if(line.trim()) DATA.dico.push({type, val: line.trim()}); }); saveAll(); afficherDico(); }; reader.readAsText(e.target.files[0]); }
+        function ajouterManuel() { const val = document.getElementById('man-val').value.trim(); if(val) { DATA.dico.push({type: document.getElementById('import-type').value, val}); saveAll(); afficherDico(); document.getElementById('man-val').value=''; } }
+        function reinitialiserDico() { if(confirm("Tout effacer ?")) { DATA.dico = []; saveAll(); afficherDico(); } }
+        function afficherDico() { document.getElementById('dico-list').innerHTML = '<ul>' + DATA.dico.map(i => `<li>${i.type}: ${i.val}</li>`).join('') + '</ul>'; }
+
+        // --- Logique Établissement ---
+        function majListesEtab() { ['select-bat', 'select-etage', 'select-secteur', 'select-ref'].forEach(id => { const type = id.replace('select-', ''); document.getElementById(id).innerHTML = `<option value="">${type.toUpperCase()}</option>` + DATA.dico.filter(i => i.type === type).map(i => `<option value="${i.val}">${i.val}</option>`).join(''); }); }
+        function ajouterLigneEtab() { const ligne = { bat: document.getElementById('select-bat').value, etage: document.getElementById('select-etage').value, secteur: document.getElementById('select-secteur').value, ref: document.getElementById('select-ref').value, surface: parseFloat(document.getElementById('surf-val').value) || 0 }; if(ligne.bat && ligne.secteur) { DATA.etab.push(ligne); saveAll(); afficherTableauEtab(); } else alert("Champs obligatoires"); }
+        function afficherTableauEtab() { document.getElementById('etab-body').innerHTML = DATA.etab.map((l, i) => `<tr><td>${l.bat}</td><td>${l.etage}</td><td>${l.secteur}</td><td>${l.ref}</td><td>${l.surface}</td><td><button onclick="DATA.etab.splice(${i},1);saveAll();afficherTableauEtab();" style="background:#ef4444;">X</button></td></tr>`).join(''); }
+
+        // --- Logique Agents ---
+        function ajouterAgent() { const nom = document.getElementById('agent-nom').value; if(nom) { DATA.agents.push({id: 'AG-'+(DATA.agents.length+1), nom, prenom: document.getElementById('agent-prenom').value, fonction: document.getElementById('agent-fonction').value}); saveAll(); afficherTableauAgents(); } }
+        function afficherTableauAgents() { document.getElementById('agent-body').innerHTML = DATA.agents.map((a, i) => `<tr><td>${a.id}</td><td>${a.nom}</td><td>${a.prenom}</td><td>${a.fonction}</td><td><button onclick="DATA.agents.splice(${i},1);saveAll();afficherTableauAgents();" style="background:#ef4444;">X</button></td></tr>`).join(''); }
+
+        // --- Logique Affectations ---
+        function majListesAffectation() { document.getElementById('select-agent-affect').innerHTML = '<option value="">Choisir un Agent</option>' + DATA.agents.map(a => `<option value="${a.nom} ${a.prenom}">${a.nom} ${a.prenom}</option>`).join(''); document.getElementById('select-local-affect').innerHTML = '<option value="">Choisir un Local</option>' + DATA.etab.map((l, i) => `<option value="${i}">${l.bat} > ${l.etage} > ${l.secteur} (${l.ref})</option>`).join(''); }
+        function ajouterAffectation() { const agent = document.getElementById('select-agent-affect').value; const idx = document.getElementById('select-local-affect').value; if(agent && idx !== "") { DATA.affect.push({agent, local: DATA.etab[idx]}); saveAll(); afficherAffectations(); } }
+        function convertirEnHeuresMinutes(h) { return `${Math.floor(h)}h${Math.round((h-Math.floor(h))*60).toString().padStart(2, '0')}`; }
+        function afficherAffectations() { const body = document.getElementById('affect-body'); let html = ""; DATA.affect.forEach((a, i) => { const surface = parseFloat(a.local.surface) || 0; const cadence = CADENCES[a.local.ref] || {type: 'm2', val: 100}; const temps = (cadence.type === 'm2') ? (surface / cadence.val) : (surface * cadence.val); html += `<tr><td>${a.agent}</td><td>${a.local.bat}/${a.local.etage}/${a.local.secteur}</td><td>${a.local.ref}</td><td>${surface}</td><td>${convertirEnHeuresMinutes(temps)}</td><td><button onclick="DATA.affect.splice(${i},1);saveAll();afficherAffectations();" style="background:#ef4444;">X</button></td></tr>`; }); body.innerHTML = html; }
+        
+        function exporterCSV() { alert("Export prêt !"); }
+
+        afficherDico(); afficherTableauEtab(); afficherTableauAgents(); afficherAffectations();
+    </script>
+</body>
+</html>

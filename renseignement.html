@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Fiche de Renseignement - Entretien & Terrain</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #002266;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #001144;
+            border: 2px solid #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        /* Style du bouton Retour au Portail */
+        .btn-portail {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #002266;
+            color: #ffffff;
+            border: 1px solid #4466aa;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        .btn-portail:hover {
+            background-color: #003388;
+        }
+        h1 {
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #a9c6ff;
+            margin-bottom: 25px;
+        }
+        .file-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #4466aa;
+            flex-wrap: wrap;
+        }
+        .header-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            background-color: #002266;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #4466aa;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 14px;
+            color: #a9c6ff;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            padding: 8px;
+            background-color: #000822;
+            border: 1px solid #ffffff;
+            color: #ffffff;
+            border-radius: 4px;
+            font-size: 14px;
+            color-scheme: dark;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        th, td {
+            border: 1px solid #4466aa;
+            padding: 10px;
+            text-align: left;
+            font-size: 13px;
+            vertical-align: top;
+        }
+        th {
+            background-color: #003388;
+            color: #ffffff;
+            text-align: center;
+        }
+        .zone-header {
+            background-color: #002255;
+            color: #ffaa00;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .checkbox-item input {
+            margin-top: 2px;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 6px;
+            background-color: #000822;
+            border: 1px solid #4466aa;
+            color: #ffffff;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        textarea {
+            resize: vertical;
+            height: 70px;
+        }
+        button {
+            background-color: #ffaa00;
+            color: #001144;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #ffcc00;
+        }
+        .btn-secondary {
+            background-color: #3366cc;
+            color: #ffffff;
+        }
+        .btn-secondary:hover {
+            background-color: #4488ff;
+        }
+        .btn-pdf {
+            background-color: #28a745;
+            color: #ffffff;
+        }
+        .btn-pdf:hover {
+            background-color: #218838;
+        }
+        .btn-danger {
+            background-color: #cc3333;
+            color: #ffffff;
+        }
+        .btn-danger:hover {
+            background-color: #ff4444;
+        }
+        .analysis-box {
+            background-color: #001a4d;
+            border: 2px solid #ffaa00;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+        .analysis-box h2 {
+            color: #ffaa00;
+            margin-top: 0;
+            font-size: 20px;
+        }
+        #importFile {
+            display: none;
+        }
+
+        /* Style spécifique pour l'impression / export PDF */
+        @media print {
+            body {
+                background-color: #ffffff;
+                color: #000000;
+                padding: 0;
+            }
+            .container {
+                background-color: #ffffff;
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            .btn-portail, .file-actions, .subtitle {
+                display: none;
+            }
+            .header-grid {
+                background-color: #f1f1f1;
+                border: 1px solid #ccc;
+            }
+            .form-group input, .form-group select {
+                background-color: #ffffff;
+                color: #000000;
+                border: 1px solid #ccc;
+            }
+            th {
+                background-color: #003388 !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .zone-header {
+                background-color: #e0e0e0 !important;
+                color: #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            th, td {
+                border: 1px solid #999;
+                color: #000000;
+            }
+            input[type="text"], textarea {
+                background-color: #ffffff;
+                color: #000000;
+                border: none;
+                resize: none;
+            }
+            .analysis-box {
+                background-color: #f9f9f9;
+                border: 1px solid #ccc;
+                color: #000000;
+            }
+            .analysis-box h2, .analysis-box ul {
+                color: #000000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- BOUTON RETOUR AU PORTAIL -->
+        <div>
+            <a href="index.html" class="btn-portail">
+                ⬅ Retour au Portail Central
+            </a>
+        </div>
+
+        <h1>Fiche de Renseignement - Entretien & Terrain</h1>
+        <p class="subtitle">Outil de recueil avec points à cocher, choix libres et calendrier</p>
+
+        <!-- Barre d'actions -->
+        <div class="file-actions">
+            <button class="btn-pdf" onclick="exportToPdf()">📄 Exporter en PDF</button>
+            <button class="btn-secondary" onclick="exportToJson()">💾 Exporter en JSON</button>
+            <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Importer</button>
+            <button class="btn-danger" onclick="resetForm()">🔄 Réinitialiser</button>
+            <input type="file" id="importFile" accept=".json" onchange="importFromJson(event)">
+        </div>
+
+        <!-- En-tête -->
+        <div class="header-grid">
+            <div class="form-group">
+                <label>Établissement (Collège) :</label>
+                <select id="etablissement">
+                    <option value="Agon Coutainville Les Embruns">Agon Coutainville Les Embruns</option>
+                    <option value="Avranches Challemel Lacour">Avranches Challemel Lacour</option>
+                    <option value="Avranches La Chaussonnière">Avranches La Chaussonnière</option>
+                    <option value="Brécey Pierre Aguiton">Brécey Pierre Aguiton</option>
+                    <option value="Bréhal La vanlée">Bréhal La vanlée</option>
+                    <option value="Bricquebec en Cotentin Marcel Grillard">Bricquebec en Cotentin Marcel Grillard</option>
+                    <option value="Canisy Jean Follain">Canisy Jean Follain</option>
+                    <option value="Carentan Les Marais Léon Gambetta">Carentan Les Marais Léon Gambetta</option>
+                    <option value="Cerisy la Salle">Cerisy la Salle</option>
+                    <option value="Cherbourg en Cotentin Cachin">Cherbourg en Cotentin Cachin</option>
+                    <option value="Cherbourg en Cotentin-Tourlaville Diderot">Cherbourg en Cotentin-Tourlaville Diderot</option>
+                    <option value="Cherbourg en Cotentin - Querqueville- Ferry">Cherbourg en Cotentin - Querqueville- Ferry</option>
+                    <option value="Cherbourg en Cotentin Bucaille-Charcot">Cherbourg en Cotentin Bucaille-Charcot</option>
+                    <option value="Cherbourg - Equeurdreville - Le Corre">Cherbourg - Equeurdreville - Le Corre</option>
+                    <option value="Cherbourg en Cotentin Le Ferronay">Cherbourg en Cotentin Le Ferronay</option>
+                    <option value="Cherbourg en Cotentin Les Provinces">Cherbourg en Cotentin Les Provinces</option>
+                    <option value="Cherbourg en Cotentin - la Glacerie - Zola">Cherbourg en Cotentin - la Glacerie - Zola</option>
+                    <option value="Coutances Jacques Prévert" selected>Coutances Jacques Prévert</option>
+                    <option value="Ducey Les Chéris Gabriel de Montgomery">Ducey Les Chéris Gabriel de Montgomery</option>
+                    <option value="Flamanville Lucien Goubert">Flamanville Lucien Goubert</option>
+                    <option value="Gavray R Vaudatin">Gavray R Vaudatin</option>
+                    <option value="Granville André Malraux">Granville André Malraux</option>
+                    <option value="La Hague Le Hague Dike">La Hague Le Hague Dike</option>
+                    <option value="La Haye Etenclin">La Haye Etenclin</option>
+                    <option value="Haye pesnel (La)">Haye pesnel (La)</option>
+                    <option value="Isigny le Buat Jozeau-Marigné">Isigny le Buat Jozeau-Marigné</option>
+                    <option value="Lessay Desdevises du Dézert">Lessay Desdevises du Dézert</option>
+                    <option value="Marigny Le Lozon Jean Monnet">Marigny Le Lozon Jean Monnet</option>
+                    <option value="Montebourg Tiphaigne de la Roche">Montebourg Tiphaigne de la Roche</option>
+                    <option value="Montmartin sur Mer Les Courtils">Montmartin sur Mer Les Courtils</option>
+                    <option value="Mortain Bocage Robert de Mortain">Mortain Bocage Robert de Mortain</option>
+                    <option value="Percy en Normandie Moulin de Haut">Percy en Normandie Moulin de Haut</option>
+                    <option value="Périers">Périers</option>
+                    <option value="Pieux (Les) Le Castillon">Pieux (Les) Le Castillon</option>
+                    <option value="Pontorson Georges Brassens">Pontorson Georges Brassens</option>
+                    <option value="Portbail André Miclot">Portbail André Miclot</option>
+                    <option value="St Clair sur Elle Jean Grémillon">St Clair sur Elle Jean Grémillon</option>
+                    <option value="St Hilaire du Harcouet">St Hilaire du Harcouet</option>
+                    <option value="St James Le Clos Tardif">St James Le Clos Tardif</option>
+                    <option value="St Jean de Daye Le Marais">St Jean de Daye Le Marais</option>
+                    <option value="St Lô Lavalley">St Lô Lavalley</option>
+                    <option value="St Lô Pasteur">St Lô Pasteur</option>
+                    <option value="St Pierre Eglise Gilles de Gouberville">St Pierre Eglise Gilles de Gouberville</option>
+                    <option value="St Sauveur Lendelin">St Sauveur Lendelin</option>
+                    <option value="St Sauveur le Vicomte Barbey d'Aurévilly">St Sauveur le Vicomte Barbey d'Aurévilly</option>
+                    <option value="St Vaast la Hougue Guillaume Fouace">St Vaast la Hougue Guillaume Fouace</option>
+                    <option value="Ste Mère Eglise St Exupéry">Ste Mère Eglise St Exupéry</option>
+                    <option value="Sartilly Baie Bocage Anatole France">Sartilly Baie Bocage Anatole France</option>
+                    <option value="Tessy Bocage R Queneau">Tessy Bocage R Queneau</option>
+                    <option value="Torigni les Villes A Camus">Torigni les Villes A Camus</option>
+                    <option value="Valognes Félix Buhot">Valognes Félix Buhot</option>
+                    <option value="Villedieu les Poeles Rouffigny Le Dinandier">Villedieu les Poeles Rouffigny Le Dinandier</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Date du contrôle :</label>
+                <input type="date" id="dateControle">
+            </div>
+            <div class="form-group">
+                <label>Nom de l'agent :</label>
+                <input type="text" id="nomAgent" placeholder="Nom de l'agent...">
+            </div>
+            <div class="form-group">
+                <label>Spécialisation de l'agent :</label>
+                <select id="specialisationAgent">
+                    <option value="Polyvalent / Autre">Polyvalent / Autre</option>
+                    <option value="Installation électrique">Installation électrique</option>
+                    <option value="Installation sanitaire et thermique">Installation sanitaire et thermique</option>
+                    <option value="Espace vert">Espace vert</option>
+                    <option value="Revêtement et finition">Revêtement et finition</option>
+                </select>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Contrôlé par :</label>
+                <input type="text" id="controleur" value="de Vergezac">
+            </div>
+        </div>
+
+        <!-- Tableau des questions clés -->
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Axe d'analyse / Compétence clé</th>
+                    <th style="width: 25%;">Questions clés à poser / Points de contrôle</th>
+                    <th style="width: 30%;">Précisions / Détails à creuser (Cochables & Libre)</th>
+                    <th style="width: 25%;">Commentaires / Observations</th>
+                </tr>
+            </thead>
+            <tbody id="criteriaTable">
+                <!-- Généré par script -->
+            </tbody>
+        </table>
+
+        <!-- Commentaire global -->
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label style="font-size: 16px; font-weight: bold; color: #ffaa00;">Synthèse globale de l'entretien :</label>
+            <textarea id="commentaireGlobal" placeholder="Remarques globales..."></textarea>
+        </div>
+
+        <!-- Synthèse automatique -->
+        <div class="analysis-box">
+            <h2>📊 Synthèse des éléments renseignés</h2>
+            <ul id="summaryObservations" style="margin: 0; padding-left: 20px; color: #a9c6ff;">
+                <!-- Dynamique -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const rowsDefinition = [
+            { type: "zone", title: "1. Pilotage & Organisation" },
+            { axe: "Écosystème & Acteurs concernés", q: "Quels sont vos interlocuteurs privilégiés en interne et en externe ?", options: ["Cartographie des flux, validation des priorités avec le gestionnaire et la direction du patrimoine."] },
+            { axe: "Planification & Arbitrages", q: "Comment structurez-vous vos journées et gérez-vous l'urgence face au préventif ?", options: ["Utilisation du planning annuel, lissage de la charge et arbitrage des priorités."] },
+            { axe: "Traçabilité & Outils de suivi", q: "Par quel support consignez-vous les interventions et le suivi des pannes ?", options: ["Tableaux de bord, fiches d'intervention, historique par bâtiment."] },
+
+            { type: "zone", title: "2. Moyens & Sécurité" },
+            { axe: "Gestion des stocks & Matériel", q: "Disposez-vous des ressources nécessaires et comment gérez-vous les consommables ?", options: ["Approvisionnement, seuils d'alerte, propreté et rangement des locaux/véhicules."] },
+            { axe: "Conformité & Registres de sécurité", q: "Quelles sont vos habilitations à jour et le suivi des registres réglementaires ?", options: ["Habilitations électriques, travail en hauteur, amiante, préparation de la commission de sécurité."] },
+
+            { type: "zone", title: "3. Technique - Électricité" },
+            { axe: "Maintenance courante et sécurité", q: "Quelle est votre méthodologie pour le diagnostic et le dépannage électrique ?", options: ["Habilitations, lecture de schémas, contrôle des tableaux et BAES."] },
+
+            { type: "zone", title: "3. Technique - Plomberie & Chauffage" },
+            { axe: "Conduite et petits dépannages", q: "Comment procédez-vous pour les recherches de fuites et la maintenance thermique ?", options: ["Remplacement à l'identique, débouchage, purge des radiateurs."] },
+
+            { type: "zone", title: "3. Technique - Équipements Spécifiques" },
+            { axe: "Installations techniques (CTA, VMC)", q: "Comment assurez-vous le suivi des installations de ventilation et de l'air ?", options: ["Vérification des CTA/VMC, nettoyage des filtres, contrôles spécifiques."] },
+
+            { type: "zone", title: "3. Technique - Bâtiment & Extérieurs" },
+            { axe: "Second œuvre & Espaces verts", q: "Quels menus travaux réalisez-vous en interne par rapport aux prestataires ?", options: ["Peinture, cloisons, serrurerie, entretien des extérieurs et tonte."] },
+
+            { type: "zone", title: "4. Reporting & Partenariats" },
+            { axe: "Suivi des prestataires externes", q: "Comment suivez-vous et réceptionnez-vous les travaux des entreprises extérieures ?", options: ["Validation des interventions, respect du cahier des charges, comptes-rendus."] },
+            { axe: "Rendre compte à la hiérarchie", q: "Quels indicateurs transmettez-vous au gestionnaire et au patrimoine ?", options: ["Capacité d'alerte, remontée des besoins d'investissement et bilans d'activité."] },
+
+            { type: "zone", title: "5. Planification & Inventaire technique" },
+            { axe: "Inventaire du matériel", q: "Disposez-vous de tout l'équipement nécessaire au bon fonctionnement et en bon état ?", options: ["Inventaire du matériel existant, identification des manques ou du matériel obsolète."] },
+            { axe: "Contrôles périodiques", q: "Comment planifiez-vous et suivez-vous les contrôles obligatoires et périodiques ?", options: ["Planification des contrôles périodiques (réglementaires, sécurité, technique)."] },
+            { axe: "Maintenance améliorative", q: "Anticipez-vous les actions d'amélioration ou d'optimisation des installations ?", options: ["Planification et suivi de la maintenance améliorative et des travaux de fond."] }
+        ];
+
+        function buildTable(dataToLoad = null) {
+            const tbody = document.getElementById("criteriaTable");
+            tbody.innerHTML = "";
+
+            let itemIndex = 0;
+            rowsDefinition.forEach((item) => {
+                if (item.type === "zone") {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `<td colspan="4" class="zone-header">${item.title}</td>`;
+                    tbody.appendChild(tr);
+                } else {
+                    const sourceData = dataToLoad && dataToLoad[itemIndex] ? dataToLoad[itemIndex] : item;
+                    const tr = document.createElement("tr");
+
+                    let optionsHtml = "";
+                    item.options.forEach((opt) => {
+                        let isChecked = false;
+                        if (sourceData.checkedOpts && sourceData.checkedOpts.includes(opt)) {
+                            isChecked = true;
+                        }
+                        optionsHtml += `
+                            <label class="checkbox-item">
+                                <input type="checkbox" class="opt-check" value="${opt}" ${isChecked ? 'checked' : ''} onchange="updateAnalysis()">
+                                <span>${opt}</span>
+                            </label>
+                        `;
+                    });
+
+                    tr.innerHTML = `
+                        <td><strong>${sourceData.axe}</strong></td>
+                        <td>${sourceData.q}</td>
+                        <td>
+                            <div class="options-container">
+                                ${optionsHtml}
+                            </div>
+                            <input type="text" class="custom-resp-input" placeholder="Autre choix / précision libre..." value="${sourceData.customResp || ''}" oninput="updateAnalysis()">
+                        </td>
+                        <td><textarea class="comm-input" placeholder="Commentaires..." oninput="updateAnalysis()">${sourceData.comm || ''}</textarea></td>
+                    `;
+                    tbody.appendChild(tr);
+                    itemIndex++;
+                }
+            });
+            updateAnalysis();
+        }
+
+        function updateAnalysis() {
+            const rows = document.querySelectorAll("#criteriaTable tr");
+            let observations = [];
+
+            rows.forEach(row => {
+                const checks = row.querySelectorAll('.opt-check:checked');
+                const customInput = row.querySelector('.custom-resp-input');
+                const commInput = row.querySelector('.comm-input');
+                const axeCell = row.querySelector('td strong');
+
+                if (axeCell) {
+                    let checkedTexts = [];
+                    checks.forEach(c => checkedTexts.push(c.value));
+                    const custom = customInput ? customInput.value.trim() : "";
+                    const comm = commInput ? commInput.value.trim() : "";
+
+                    if (checkedTexts.length > 0 || custom || comm) {
+                        let text = `<strong>${axeCell.textContent}</strong> : `;
+                        if (checkedTexts.length > 0) text += `[Coché: ${checkedTexts.join(', ')}] `;
+                        if (custom) text += `[Libre: ${custom}] `;
+                        if (comm) text += `<em>(Comm: ${comm})</em>`;
+                        observations.push(text);
+                    }
+                }
+            });
+
+            const ul = document.getElementById("summaryObservations");
+            ul.innerHTML = "";
+            if (observations.length === 0) {
+                ul.innerHTML = "<li>Aucune information saisie pour le moment.</li>";
+            } else {
+                observations.forEach(obs => {
+                    const li = document.createElement("li");
+                    li.innerHTML = obs;
+                    ul.appendChild(li);
+                });
+            }
+        }
+
+        function exportToPdf() {
+            window.print();
+        }
+
+        function resetForm() {
+            if (confirm("Voulez-vous vraiment réinitialiser toute la fiche ?")) {
+                document.getElementById("nomAgent").value = "";
+                document.getElementById("specialisationAgent").selectedIndex = 0;
+                document.getElementById("commentaireGlobal").value = "";
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById("dateControle").value = today;
+                buildTable();
+            }
+        }
+
+        function getFormData() {
+            const rows = document.querySelectorAll("#criteriaTable tr");
+            const criteriaList = [];
+
+            rows.forEach(row => {
+                const checks = row.querySelectorAll('.opt-check:checked');
+                const customInput = row.querySelector('.custom-resp-input');
+                const commInput = row.querySelector('.comm-input');
+                const axeCell = row.querySelector('td strong');
+
+                if (axeCell) {
+                    let checkedOpts = [];
+                    checks.forEach(c => checkedOpts.push(c.value));
+
+                    criteriaList.push({
+                        axe: axeCell.textContent,
+                        checkedOpts: checkedOpts,
+                        customResp: customInput ? customInput.value : "",
+                        comm: commInput ? commInput.value : ""
+                    });
+                }
+            });
+
+            return {
+                header: {
+                    etablissement: document.getElementById("etablissement").value,
+                    dateControle: document.getElementById("dateControle").value,
+                    nomAgent: document.getElementById("nomAgent").value,
+                    specialisationAgent: document.getElementById("specialisationAgent").value,
+                    controleur: document.getElementById("controleur").value,
+                    commentaireGlobal: document.getElementById("commentaireGlobal").value
+                },
+                criteria: criteriaList
+            };
+        }
+
+        function exportToJson() {
+            const data = getFormData();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `renseignement_${data.header.etablissement.replace(/\s+/g, '_')}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importFromJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.header) {
+                        document.getElementById("etablissement").value = data.header.etablissement || "Coutances Jacques Prévert";
+                        document.getElementById("dateControle").value = data.header.dateControle || "";
+                        document.getElementById("nomAgent").value = data.header.nomAgent || "";
+                        document.getElementById("specialisationAgent").value = data.header.specialisationAgent || "Polyvalent / Autre";
+                        document.getElementById("controleur").value = data.header.controleur || "";
+                        document.getElementById("commentaireGlobal").value = data.header.commentaireGlobal || "";
+                    }
+                    if (data.criteria) {
+                        buildTable(data.criteria);
+                    }
+                } catch (error) {
+                    alert("Erreur lors de l'import du fichier.");
+                }
+                event.target.value = "";
+            };
+            reader.readAsText(file);
+        }
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("dateControle").value = today;
+            buildTable();
+        };
+    </script>
+
+</body>
+</html>

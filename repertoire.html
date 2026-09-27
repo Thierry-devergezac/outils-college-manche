@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Répertoire et Contacts - Collèges de la Manche</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        /* Style du bouton Retour au Portail */
+        .btn-portail {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #1e3a8a;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        .btn-portail:hover {
+            background-color: #1d4ed8;
+        }
+        h2 {
+            color: #1e3a8a;
+            margin-top: 0;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .info-row {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #64748b;
+            width: 35%;
+        }
+        .info-value {
+            width: 65%;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 14px;
+            background: #fff;
+        }
+        input[type="text"]:focus {
+            border-color: #3b82f6;
+            outline: none;
+        }
+        a.mail-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a.mail-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- BOUTON RETOUR AU PORTAIL -->
+    <div>
+        <a href="index.html" class="btn-portail">
+            ⬅ Retour au Portail Central
+        </a>
+    </div>
+
+    <h2>Répertoire et Contacts — Collèges de la Manche</h2>
+    
+    <!-- Liste déroulante -->
+    <div class="form-group">
+        <label for="collegeSelect">Sélectionner un établissement :</label>
+        <select id="collegeSelect" onchange="afficherInfosCollege()">
+            <option value="">-- Choisissez un collège --</option>
+        </select>
+    </div>
+
+    <!-- Fiche dynamique -->
+    <div id="collegeCard" class="card" style="display: none;">
+        <h3 id="nomCommune" style="margin-top:0; color:#0f172a;"></h3>
+        
+        <div class="info-row">
+            <span class="info-label">Téléphone :</span>
+            <span class="info-value" id="valTelephone"></span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Principal :</span>
+            <span class="info-value">
+                <input type="text" id="valPrincipal">
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Mail Principal :</span>
+            <span class="info-value"><a id="linkMailPrincipal" class="mail-link" href="#"></a></span>
+        </div>
+
+        <div class="info-row">
+            <span class="info-label">Secrétaire Général(e) :</span>
+            <span class="info-value">
+                <input type="text" id="valSecetaire">
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Mail Gestionnaire :</span>
+            <span class="info-value"><a id="linkMailGestionnaire" class="mail-link" href="#"></a></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Base de données complète issue de votre tableau officiel
+    const colltimes = [
+        { id: 1, nom: "Les Embruns", commune: "AGON-COUTAINVILLE", tel: "02 33 76 58 60", principal: "Non renseigne", mailP: "ce.050001E@ac-normandie.fr", secretaire: "Véronique GEFFROY", mailG: "int.050001E@ac-normandie.fr" },
+        { id: 2, nom: "Challemel Lacour", commune: "AVRANCHES", tel: "02 33 58 08 22", principal: "Gaëlle MORVAN-LE GAHELLEC", mailP: "ce.050003G@ac-normandie.fr", secretaire: "Laurent BODIN", mailG: "int.050003G@ac-normandie.fr" },
+        { id: 3, nom: "La Chaussonnière", commune: "AVRANCHES (St Martin des Champs)", tel: "02 33 48 63 32", principal: "Frédérick LEDABARDANCHON / Jean-Michel DAUVIN", mailP: "ce.0501525L@ac-normandie.fr", secretaire: "Elise NINOVE", mailG: "int.0501525L@ac-normandie.fr" },
+        { id: 4, nom: "Pierre Aguiton", commune: "BRÉCEY", tel: "02 33 89 65 80", principal: "Valérie SERRANO", mailP: "ce.0501302U@ac-normandie.fr", secretaire: "Marina RENARD", mailG: "int.0501302U@ac-normandie.fr" },
+        { id: 5, nom: "La Vanièc", commune: "BRÉHAL", tel: "02 33 61 64 59", principal: "Valérie LEMAITRE", mailP: "ce.0501235A@ac-normandie.fr", secretaire: "Stéphanie MONCUIT", mailG: "int.0501235A@ac-normandie.fr" },
+        { id: 6, nom: "Marcel Grillard", commune: "BRICQUEBEC-EN-COTENTIN", tel: "02 33 52 23 67", principal: "Bertrand BOUTEZ", mailP: "ce.050012S@ac-normandie.fr", secretaire: "Ludovic LECARPENTIER", mailG: "int.050012S@ac-normandie.fr" },
+        { id: 7, nom: "Jean Follain", commune: "CANISY", tel: "02 33 56 61 46", principal: "Véronique BARAT", mailP: "ce.050001R@ac-normandie.fr", secretaire: "Claire MOULIN", mailG: "int.050001R@ac-normandie.fr" },
+        { id: 8, nom: "Léon Gambetta", commune: "CARENTAN-LES-MARAIS", tel: "02 33 42 16 11", principal: "Véronique DUFOUR", mailP: "ce.050012S@ac-normandie.fr", secretaire: "Florence RENEE", mailG: "int.050012S@ac-normandie.fr" },
+        { id: 9, nom: "Anne Heurgon-Desjardins", commune: "CERISY-LA-SALLE", tel: "02 33 48 90 98", principal: "Sandrine LOUBOT", mailP: "ce.050014U@ac-normandie.fr", secretaire: "Matthieu BOURMAUT", mailG: "int.050014U@ac-normandie.fr" },
+        { id: 10, nom: "Bucaille Charcot", commune: "CHERBOURG-EN-COTENTIN", tel: "02 33 53 17 61", principal: "Nathalie TUTRUT", mailP: "ce.0502008L@ac-normandie.fr", secretaire: "Damien RABOT", mailG: "int.0502008L@ac-normandie.fr" },
+        { id: 11, nom: "Ingénieur Cachin", commune: "CHERBOURG-EN-COTENTIN", tel: "02 33 88 58 90", principal: "Guillaume SAMPEREZ", mailP: "ce.050024E@ac-normandie.fr", secretaire: "Alexis LAMOUREUX", mailG: "int.050024E@ac-normandie.fr" },
+        { id: 12, nom: "Diderot", commune: "CHERBOURG-EN-COTENTIN (Tourlaville)", tel: "02 33 88 41 10", principal: "Kanna DELANOUS", mailP: "ce.050080N@ac-normandie.fr", secretaire: "Nadine DUREL", mailG: "int.050080N@ac-normandie.fr" },
+        { id: 13, nom: "Jules Ferry", commune: "CHERBOURG-EN-COTENTIN (Querqueville)", tel: "02 33 03 43 30", principal: "Christelle MARESQ", mailP: "ce.0501482P@ac-normandie.fr", secretaire: "Laurent PODEVIN / Marie-Laure GAMBILLON", mailG: "int.0501482P@ac-normandie.fr" },
+        { id: 14, nom: "Raymond Le Corre", commune: "CHERBOURG-EN-COTENTIN (Equeurdreville)", tel: "02 33 93 86 96", principal: "Gilbert PELMONT", mailP: "ce.0500034R@ac-normandie.fr", secretaire: "Jean-Michel JEGOU", mailG: "int.0500034R@ac-normandie.fr" },
+        { id: 15, nom: "Le Ferronay", commune: "CHERBOURG-EN-COTENTIN", tel: "02 33 53 16 03", principal: "Vincent POISSONNET", mailP: "ce.050062W@ac-normandie.fr", secretaire: "Lauric LOTHE", mailG: "int.050062W@ac-normandie.fr" },
+        { id: 16, nom: "Les Provinces", commune: "CHERBOURG-EN-COTENTIN", tel: "02 33 87 57 70", principal: "Sébastien LE BECACHEL", mailP: "ce.0501205N@ac-normandie.fr", secretaire: "Olivier SAUDRAIS", mailG: "int.0501205N@ac-normandie.fr" },
+        { id: 17, nom: "Émile Zola", commune: "CHERBOURG-EN-COTENTIN (La Glacerie)", tel: "02 33 20 43 45", principal: "Patrick GINET", mailP: "ce.0501216A@ac-normandie.fr", secretaire: "Véronique LEQUART", mailG: "int.0501216A@ac-normandie.fr" },
+        { id: 18, nom: "Jacques Prévert", commune: "COUTANCES", tel: "02 33 76 61 31", principal: "Clarisse QUITTERS", mailP: "ce.0501206P@ac-normandie.fr", secretaire: "Isabelle AUNEAU", mailG: "int.0501206P@ac-normandie.fr" },
+        { id: 19, nom: "Gabriel de Montgomery", commune: "DUCEY-LES-CHÉRIS", tel: "02 33 89 23 60", principal: "Valéria DUQUESNOY", mailP: "ce.0501240B@ac-normandie.fr", secretaire: "Séverine CHARBONNEL", mailG: "int.0501240B@ac-normandie.fr" },
+        { id: 20, nom: "Lucien Goubert", commune: "FLAMANVILLE", tel: "02 33 10 06 80", principal: "Stéphanie BARRE", mailP: "ce.0501799J@ac-normandie.fr", secretaire: "Yolande LETOURNEUR", mailG: "int.0501799J@ac-normandie.fr" },
+        { id: 21, nom: "Roland Vaudatin", commune: "GAVRAY-SUR-SIENNE", tel: "02 33 61 40 66", principal: "Marie-Hélène POMMIER", mailP: "ce.050035S@ac-normandie.fr", secretaire: "Laurent SABOUNDJIAN", mailG: "int.050035S@ac-normandie.fr" },
+        { id: 22, nom: "André Malraux", commune: "GRANVILLE", tel: "02 33 50 01 77", principal: "Nathalie MAUHAUX-LECHONNAUX", mailP: "ce.050039W@ac-normandie.fr", secretaire: "Harald RENOUT", mailG: "int.050039W@ac-normandie.fr" },
+        { id: 23, nom: "Le Hague Dike", commune: "LA HAGUE", tel: "02 33 52 77 41", principal: "Caroline BOISBOURDIN", mailP: "ce.050006K@ac-normandie.fr", secretaire: "Nicolas MORAND", mailG: "int.050006K@ac-normandie.fr" },
+        { id: 24, nom: "Etenclin", commune: "LA HAYE", tel: "02 33 46 00 22", principal: "Marceline SIMON", mailP: "ce.0501218C@ac-normandie.fr", secretaire: "Elisabeth AMCOURDEDIEU", mailG: "int.0501218C@ac-normandie.fr" },
+        { id: 25, nom: "Louis Beuve", commune: "LA HAYE-PESNEL", tel: "02 33 90 75 01", principal: "Nathalie PERON", mailP: "ce.050042Z@ac-normandie.fr", secretaire: "Mélody GERARD", mailG: "int.050042Z@ac-normandie.fr" },
+        { id: 26, nom: "Léon Jozeau-Marigné", commune: "ISIGNY-LE-BUAT", tel: "02 33 48 00 38", principal: "Mélanie CHOLET-REUSTE", mailP: "ce.0501830T@ac-normandie.fr", secretaire: "Sophie CHESNEL", mailG: "int.0501830T@ac-normandie.fr" },
+        { id: 27, nom: "Georges Desdevises du Dézert", commune: "LESSAY", tel: "02 33 46 43 20", principal: "Nicolas GASSELIN", mailP: "ce.0501458N@ac-normandie.fr", secretaire: "Tendresse NTSAMA", mailG: "int.0501458N@ac-normandie.fr" },
+        { id: 28, nom: "Jean Monnet", commune: "MARIGNY-LE-LOZON", tel: "02 33 55 19 86", principal: "Valérie SAULNIER", mailP: "ce.050046D@sc-normandie.fr", secretaire: "Magali BERTIN", mailG: "int.050046D@sc-normandie.fr" },
+        { id: 29, nom: "Tiphaigne de la Ruche", commune: "MONTEBOURG", tel: "02 33 41 12 69", principal: "Corinne BETHELOT", mailP: "ce.050047E@ac-normandie.fr", secretaire: "Manuela FLAMBARD", mailG: "int.050047E@ac-normandie.fr" },
+        { id: 30, nom: "Les Courtils", commune: "MONTMARTIN-SUR-MER", tel: "02 33 76 76 60", principal: "Sandra LOISEL", mailP: "ce.050048F@ac-normandie.fr", secretaire: "Valène BELLIS", mailG: "int.050048F@ac-normandie.fr" },
+        { id: 31, nom: "Robert de Mortain", commune: "MORTAIN-BOCAGE", tel: "02 33 59 00 76", principal: "Laure HOUSTIN", mailP: "ce.050050H@ac-normandie.fr", secretaire: "Sandrine ROSER", mailG: "int.050050H@ac-normandie.fr" },
+        { id: 32, nom: "Du Moulin de Haut", commune: "PERCY-EN-NORMANDIE", tel: "02 33 61 58 15", principal: "Rozenn OURSIN", mailP: "ce.050052K@ac-normandie.fr", secretaire: "Sylvie LEGARDINER", mailG: "int.050052K@ac-normandie.fr" },
+        { id: 33, nom: "Le Fairage", commune: "PÉRIERS", tel: "02 33 46 63 11", principal: "Christine CECILLON", mailP: "ce.050053L@ac-normandie.fr", secretaire: "Nadège LELIEVRE", mailG: "int.050053L@ac-normandie.fr" },
+        { id: 34, nom: "Le Castillon", commune: "LES PIEUX", tel: "02 33 52 40 66", principal: "Stéphane LOISEL", mailP: "ce.0501220E@ac-normandie.fr", secretaire: "Alexandra ROY", mailG: "int.0501220E@ac-normandie.fr" },
+        { id: 35, nom: "Georges Brassens", commune: "PONTORSON", tel: "02 33 60 15 61", principal: "Clément LEFEVRE", mailP: "ce.0501241C@ac-normandie.fr", secretaire: "Olivier LE CALVEZ", mailG: "int.0501241C@ac-normandie.fr" },
+        { id: 36, nom: "André Miclot", commune: "PORT-BAIL-SUR-MER", tel: "02 33 04 87 38", principal: "Claude LECERF", mailP: "ce.0501217D@ac-normandie.fr", secretaire: "Catherine PLUQUET", mailG: "int.0501217D@ac-normandie.fr" },
+        { id: 37, nom: "Jean Grémillon", commune: "SAINT-CLAIR-SUR-ELLE", tel: "02 33 05 85 14", principal: "Isabelle DEHAYES", mailP: "ce.050069T@ac-normandie.fr", secretaire: "Julie PRIEUR", mailG: "int.050069T@ac-normandie.fr" },
+        { id: 38, nom: "Jules Verne", commune: "SAINT-HILAIRE-DU-HARCOUËT", tel: "02 33 49 20 49", principal: "Olivier MILLET", mailP: "ce.050061V@ac-normandie.fr", secretaire: "Caroline LUGAND", mailG: "int.050061V@ac-normandie.fr" },
+        { id: 39, nom: "Le Clos Tardif", commune: "SAINT-JAMES", tel: "02 33 48 32 29", principal: "Nathalia ROUZAIRE", mailP: "ce.0501242D@ac-normandie.fr", secretaire: "Cindy JOSSELIN", mailG: "int.0501242D@ac-normandie.fr" },
+        { id: 40, nom: "du Marais", commune: "SAINT-JEAN-DE-DAYE", tel: "02 33 56 81 30", principal: "Stéphane SIMON", mailP: "ce.0501301T@ac-normandie.fr", secretaire: "Nathalie JACQUETTE", mailG: "int.0501301T@ac-normandie.fr" },
+        { id: 41, nom: "Georges Lavalley", commune: "SAINT-LÔ", tel: "02 33 05 14 02", principal: "Séverine LAMOTTE", mailP: "ce.050094F@ac-normandie.fr", secretaire: "Maïv-Xis Cassidy CHA", mailG: "int.050094F@ac-normandie.fr" },
+        { id: 42, nom: "Louis Pasteur", commune: "SAINT-LÔ", tel: "02 33 72 56 80", principal: "Olivier MASSERON", mailP: "ce.050095G@ac-normandie.fr", secretaire: "Sandrine OBLIGIS", mailG: "int.050095G@ac-normandie.fr" },
+        { id: 43, nom: "Gilles de Gouberville", commune: "SAINT-PIERRE-ÉGLISE", tel: "02 33 54 32 65", principal: "Vincent ROGER", mailP: "ce.050069D@ac-normandie.fr", secretaire: "Laurence ABEGUILE", mailG: "int.050069D@ac-normandie.fr" },
+        { id: 44, nom: "Barbey d'Aurevilly", commune: "SAINT-SAUVEUR-LE-VICOMTE", tel: "02 33 95 46 46", principal: "Jean-Marc BAILLEUL", mailP: "ce.050072G@ac-normandie.fr", secretaire: "Laetitia LEPOITTEVIN", mailG: "int.050072G@ac-normandie.fr" },
+        { id: 45, nom: "Tancrède de Hauteville", commune: "SAINT-SAUVEUR-VILLAGES", tel: "02 33 76 52 70", principal: "Cyril CRESPIN", mailP: "ce.050071F@ac-normandie.fr", secretaire: "Valérie MARTIN", mailG: "int.050071F@ac-normandie.fr" },
+        { id: 46, nom: "Guillaume Fouace", commune: "SAINT-VAAST-LA-HOUGUE", tel: "02 33 54 40 81", principal: "François DAVID", mailP: "ce.0501300S@ac-normandie.fr", secretaire: "Amandine DUGAST", mailG: "int.0501300S@ac-normandie.fr" },
+        { id: 47, nom: "Antoine de Saint-Exupéry", commune: "SAINTE-MÈRE-ÉGLISE", tel: "02 33 41 33 58", principal: "Corinne DELFORTRIE", mailP: "ce.050068C@ac-normandie.fr", secretaire: "Alexandra ISAAC", mailG: "int.050068C@ac-normandie.fr" },
+        { id: 48, nom: "Anatole France", commune: "SARTILLY-BAIE-BOCAGE", tel: "02 33 48 91 66", principal: "Mathieu VACHER", mailP: "ce.050075K@ac-normandie.fr", secretaire: "Catherine FILLEUL", mailG: "int.050075K@ac-normandie.fr" },
+        { id: 49, nom: "Raymond Queneau", commune: "TESSY-BOCAGE", tel: "02 33 58 31 81", principal: "Géraldine ROUSSEAU", mailP: "ce.050078N@ac-normandie.fr", secretaire: "Nadège GUIBERT", mailG: "int.050078N@ac-normandie.fr" },
+        { id: 50, nom: "Albert Camus", commune: "TORIGNY-LES-VILLES", tel: "02 33 56 70 23", principal: "Karine MADELAINE", mailP: "ce.050079P@ac-normandie.fr", secretaire: "Bruno GALHARRET", mailG: "int.050079P@ac-normandie.fr" },
+        { id: 51, nom: "Félix Buhot", commune: "VALOGNES", tel: "02 33 40 03 45", principal: "Nathalie LECERF", mailP: "ce.050096H@ac-normandie.fr", secretaire: "Delphine LARSONNEUR", mailG: "int.050096H@ac-normandie.fr" },
+        { id: 52, nom: "Le Dinandier", commune: "VILLEDIEU-LES-POÊLES-ROUFFIGNY", tel: "02 33 89 23 40", principal: "Guy LANDRAGIN", mailP: "ce.050083U@ac-normandie.fr", secretaire: "Isabelle OZENNE", mailG: "int.050083U@ac-normandie.fr" }
+    ];
+
+    // Remplissage automatique de la liste déroulante au chargement
+    window.onload = function() {
+        const select = document.getElementById("collegeSelect");
+        colltimes.forEach(c => {
+            let option = document.createElement("option");
+            option.value = c.id;
+            option.textContent = c.commune + " — " + c.nom;
+            select.appendChild(option);
+        });
+    };
+
+    // Fonction déclenchée à chaque changement de sélection
+    function afficherInfosCollege() {
+        const selectedId = document.getElementById("collegeSelect").value;
+        const card = document.getElementById("collegeCard");
+
+        if (!selectedId) {
+            card.style.display = "none";
+            return;
+        }
+
+        const college = colltimes.find(c => c.id == selectedId);
+
+        if (college) {
+            document.getElementById("nomCommune").textContent = college.commune + " — " + college.nom;
+            document.getElementById("valTelephone").textContent = college.tel;
+            
+            document.getElementById("valPrincipal").value = college.principal;
+            document.getElementById("valSecetaire").value = college.secretaire;
+
+            const mailPNode = document.getElementById("linkMailPrincipal");
+            mailPNode.textContent = college.mailP;
+            mailPNode.href = "mailto:" + college.mailP + "?subject=Contact%20terrain%20-%20Collège%20" + encodeURIComponent(college.nom);
+
+            const mailGNode = document.getElementById("linkMailGestionnaire");
+            mailGNode.textContent = college.mailG;
+            mailGNode.href = "mailto:" + college.mailG + "?subject=Question%20gestion%20-%20Collège%20" + encodeURIComponent(college.nom);
+
+            card.style.display = "block";
+        }
+    }
+</script>
+
+</body>
+</html>
