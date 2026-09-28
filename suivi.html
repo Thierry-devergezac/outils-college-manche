@@ -125,7 +125,7 @@
         .text-center {
             text-align: center;
         }
-        button {
+        button, .btn-action {
             background-color: #ffaa00;
             color: #001144;
             border: none;
@@ -135,8 +135,12 @@
             border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
-        button:hover {
+        button:hover, .btn-action:hover {
             background-color: #ffcc00;
         }
         .btn-secondary {
@@ -145,6 +149,13 @@
         }
         .btn-secondary:hover {
             background-color: #4488ff;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: #ffffff;
+        }
+        .btn-success:hover {
+            background-color: #218838;
         }
         .btn-danger {
             background-color: #cc3333;
@@ -186,6 +197,67 @@
         #importFile {
             display: none;
         }
+
+        /* Style spécifique pour l'impression / export PDF */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .container {
+                background-color: #ffffff !important;
+                border: none !important;
+                box-shadow: none !important;
+                color: #000000 !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            .btn-portail, .file-actions, input[type="file"] {
+                display: none !important;
+            }
+            .header-grid {
+                background-color: #f0f0f0 !important;
+                border: 1px solid #ccc !important;
+            }
+            .form-group label {
+                color: #333 !important;
+            }
+            .form-group input, .form-group select, textarea, input[type="text"] {
+                background-color: #fff !important;
+                color: #000 !important;
+                border: 1px solid #999 !important;
+            }
+            th {
+                background-color: #003388 !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .zone-header {
+                background-color: #ddd !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .analysis-box {
+                background-color: #f8f9fa !important;
+                border: 2px solid #333 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .analysis-box h2, .analysis-box strong {
+                color: #000 !important;
+            }
+            .stat-card {
+                background: #eee !important;
+                border: 1px solid #ccc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .stat-card span {
+                color: #000 !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -199,12 +271,13 @@
         </div>
 
         <h1>Fiche de Suivi et Analyse - Pré-imprégnation</h1>
-        <p class="subtitle">Outil tactile avec sélection des collèges, calendriers et réinitialisation</p>
+        <p class="subtitle">Outil tactile avec sélection des collèges, calendriers, export JSON et PDF</p>
 
         <!-- Barre d'actions -->
         <div class="file-actions">
-            <button class="btn-secondary" onclick="exportToJson()">💾 Exporter la fiche</button>
+            <button class="btn-secondary" onclick="exportToJson()">💾 Exporter JSON</button>
             <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Importer</button>
+            <button class="btn-success" onclick="window.print()">🖨️ Exporter en PDF</button>
             <button class="btn-danger" onclick="resetForm()">🔄 Réinitialiser</button>
             <input type="file" id="importFile" accept=".json" onchange="importFromJson(event)">
         </div>
