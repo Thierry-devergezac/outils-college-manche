@@ -27,7 +27,7 @@
             background: #334155;
             border-color: #3b82f6;
         }
-        .tabs { display: flex; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .tabs { display: flex; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; flex-wrap: wrap; }
         .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; }
         .tab-btn.active { background: #3b82f6; color: white; }
         .panel { display: none; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
@@ -39,6 +39,7 @@
         th, td { border-bottom: 1px solid #334155; padding: 12px; text-align: left; }
         th { color: #94a3b8; text-transform: uppercase; font-size: 12px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .agent-total-row { background: rgba(59, 130, 246, 0.15); font-weight: bold; border-top: 2px solid #3b82f6; }
     </style>
 </head>
 <body>
@@ -99,20 +100,44 @@
         <select id="select-agent-affect"></select>
         <select id="select-local-affect"></select>
         <button onclick="ajouterAffectation()">Affecter</button>
-        <table id="affect-table"><thead><tr><th>Agent</th><th>Local</th><th>Ref</th><th>m²</th><th>Temps</th><th>Action</th></tr></thead><tbody id="affect-body"></tbody></table>
+        <table id="affect-table">
+            <thead>
+                <tr><th>Agent</th><th>Local</th><th>Ref</th><th>m²</th><th>Temps</th><th>Action</th></tr>
+            </thead>
+            <tbody id="affect-body"></tbody>
+        </table>
     </div>
 
     <div id="p4" class="panel">
         <h3>Exportation</h3>
         <select id="export-choice">
-            <option value="dico">Dictionnaire</option><option value="etab">Établissement</option>
-            <option value="agents">Agents</option><option value="affect">Affectations</option>
+            <option value="dico">Dictionnaire</option>
+            <option value="etab">Établissement</option>
+            <option value="agents">Agents</option>
+            <option value="affect">Affectations</option>
         </select>
         <button onclick="exporterCSV()">Exporter en .csv</button>
     </div>
 
     <script>
         const CADENCES = { 'A': { type: 'm2', val: 180 }, 'C': { type: 'm2', val: 210 }, 'D': { type: 'm2', val: 55 }, 'E': { type: 'm2', val: 310 }, 'F': { type: 'm2', val: 350 }, 'G': { type: 'm2', val: 200 }, 'H': { type: 'm2', val: 149.85 }, 'I': { type: 'm2', val: 50 }, 'J': { type: 'm2', val: 180 }, 'K': { type: 'm2', val: 130 }, 'L': { type: 'elem', val: 0.08 }, 'M': { type: 'elem', val: 0.13 } };
+        
+        // Libellés officiels pour le menu déroulant de choix des références
+        const LABELS_REF = {
+            'A': "Salles d'enseignement (*)",
+            'C': "Salles administratives",
+            'D': "Sanitaires",
+            'E': "Circulation",
+            'F': "Locaux de vie",
+            'G': "Locaux techniques",
+            'H': "Internat",
+            'I': "Sanitaires internat",
+            'J': "Salle de sport",
+            'K': "Dépôt d'enseignement",
+            'L': "Ateliers",
+            'M': "Escaliers"
+        };
+
         let DATA = JSON.parse(localStorage.getItem('secteurPro_master') || '{"dico":[], "etab":[], "agents":[], "affect":[]}');
         
         function saveAll() { localStorage.setItem('secteurPro_master', JSON.stringify(DATA)); }
@@ -131,7 +156,23 @@
         function afficherDico() { document.getElementById('dico-list').innerHTML = '<ul>' + DATA.dico.map(i => `<li>${i.type}: ${i.val}</li>`).join('') + '</ul>'; }
 
         // --- Logique Établissement ---
-        function majListesEtab() { ['select-bat', 'select-etage', 'select-secteur', 'select-ref'].forEach(id => { const type = id.replace('select-', ''); document.getElementById(id).innerHTML = `<option value="">${type.toUpperCase()}</option>` + DATA.dico.filter(i => i.type === type).map(i => `<option value="${i.val}">${i.val}</option>`).join(''); }); }
+        function majListesEtab() { 
+            ['select-bat', 'select-etage', 'select-secteur', 'select-ref'].forEach(id => { 
+                const type = id.replace('select-', ''); 
+                const selectElem = document.getElementById(id);
+                
+                if (type === 'ref') {
+                    // Affichage enrichi uniquement dans le menu déroulant pour guider le choix
+                    selectElem.innerHTML = `<option value="">RÉFÉRENCE</option>` + DATA.dico.filter(i => i.type === 'ref').map(i => {
+                        const libelle = LABELS_REF[i.val] || '';
+                        return `<option value="${i.val}">${i.val}${libelle ? ' - ' + libelle : ''}</option>`;
+                    }).join('');
+                } else {
+                    selectElem.innerHTML = `<option value="">${type.toUpperCase()}</option>` + DATA.dico.filter(i => i.type === type).map(i => `<option value="${i.val}">${i.val}</option>`).join(''); 
+                }
+            }); 
+        }
+
         function ajouterLigneEtab() { const ligne = { bat: document.getElementById('select-bat').value, etage: document.getElementById('select-etage').value, secteur: document.getElementById('select-secteur').value, ref: document.getElementById('select-ref').value, surface: parseFloat(document.getElementById('surf-val').value) || 0 }; if(ligne.bat && ligne.secteur) { DATA.etab.push(ligne); saveAll(); afficherTableauEtab(); } else alert("Champs obligatoires"); }
         function afficherTableauEtab() { document.getElementById('etab-body').innerHTML = DATA.etab.map((l, i) => `<tr><td>${l.bat}</td><td>${l.etage}</td><td>${l.secteur}</td><td>${l.ref}</td><td>${l.surface}</td><td><button onclick="DATA.etab.splice(${i},1);saveAll();afficherTableauEtab();" style="background:#ef4444;">X</button></td></tr>`).join(''); }
 
@@ -142,10 +183,114 @@
         // --- Logique Affectations ---
         function majListesAffectation() { document.getElementById('select-agent-affect').innerHTML = '<option value="">Choisir un Agent</option>' + DATA.agents.map(a => `<option value="${a.nom} ${a.prenom}">${a.nom} ${a.prenom}</option>`).join(''); document.getElementById('select-local-affect').innerHTML = '<option value="">Choisir un Local</option>' + DATA.etab.map((l, i) => `<option value="${i}">${l.bat} > ${l.etage} > ${l.secteur} (${l.ref})</option>`).join(''); }
         function ajouterAffectation() { const agent = document.getElementById('select-agent-affect').value; const idx = document.getElementById('select-local-affect').value; if(agent && idx !== "") { DATA.affect.push({agent, local: DATA.etab[idx]}); saveAll(); afficherAffectations(); } }
-        function convertirEnHeuresMinutes(h) { return `${Math.floor(h)}h${Math.round((h-Math.floor(h))*60).toString().padStart(2, '0')}`; }
-        function afficherAffectations() { const body = document.getElementById('affect-body'); let html = ""; DATA.affect.forEach((a, i) => { const surface = parseFloat(a.local.surface) || 0; const cadence = CADENCES[a.local.ref] || {type: 'm2', val: 100}; const temps = (cadence.type === 'm2') ? (surface / cadence.val) : (surface * cadence.val); html += `<tr><td>${a.agent}</td><td>${a.local.bat}/${a.local.etage}/${a.local.secteur}</td><td>${a.local.ref}</td><td>${surface}</td><td>${convertirEnHeuresMinutes(temps)}</td><td><button onclick="DATA.affect.splice(${i},1);saveAll();afficherAffectations();" style="background:#ef4444;">X</button></td></tr>`; }); body.innerHTML = html; }
+        function convertirEnHeuresMinutes(h) { 
+            const heures = Math.floor(h);
+            const minutes = Math.round((h - heures) * 60);
+            return `${heures}h${minutes.toString().padStart(2, '0')}`; 
+        }
+
+        function afficherAffectations() { 
+            const body = document.getElementById('affect-body'); 
+            let html = ""; 
+
+            // Grouper les affectations par agent pour insérer la ligne de sous-total à la fin de chaque groupe
+            let affectationsParAgent = {};
+            DATA.affect.forEach((item, index) => {
+                if (!affectationsParAgent[item.agent]) {
+                    affectationsParAgent[item.agent] = [];
+                }
+                affectationsParAgent[item.agent].push({ ...item, originalIndex: index });
+            });
+
+            Object.keys(affectationsParAgent).forEach(agent => {
+                let totalSurfAgent = 0;
+                let totalTempsAgent = 0;
+
+                affectationsParAgent[agent].forEach(item => {
+                    const surface = parseFloat(item.local.surface) || 0; 
+                    const cadence = CADENCES[item.local.ref] || {type: 'm2', val: 100}; 
+                    const temps = (cadence.type === 'm2') ? (surface / cadence.val) : (surface * cadence.val); 
+                    
+                    totalSurfAgent += surface;
+                    totalTempsAgent += temps;
+
+                    html += `<tr>
+                        <td>${item.agent}</td>
+                        <td>${item.local.bat}/${item.local.etage}/${item.local.secteur}</td>
+                        <td>${item.local.ref}</td>
+                        <td>${surface}</td>
+                        <td>${convertirEnHeuresMinutes(temps)}</td>
+                        <td><button onclick="DATA.affect.splice(${item.originalIndex},1);saveAll();afficherAffectations();" style="background:#ef4444; padding:5px 10px;">X</button></td>
+                    </tr>`;
+                });
+
+                // Ligne de sous-total pour l'agent
+                html += `<tr class="agent-total-row">
+                    <td colspan="3"><b>TOTAL POUR ${agent.toUpperCase()}</b></td>
+                    <td><b>${totalSurfAgent.toFixed(1)} m²</b></td>
+                    <td><b>${convertirEnHeuresMinutes(totalTempsAgent)}</b></td>
+                    <td></td>
+                </tr>`;
+            });
+
+            body.innerHTML = html; 
+        }
         
-        function exporterCSV() { alert("Export prêt !"); }
+        // --- Exportation CSV propre (sans caractères bizarres) ---
+        function exporterCSV() {
+            const choix = document.getElementById('export-choice').value;
+            let csvRows = [];
+            let filename = "SecteurPro_Export.csv";
+
+            if (choix === 'dico') {
+                filename = "SecteurPro_Dictionnaire.csv";
+                csvRows.push(["Type", "Valeur"]);
+                DATA.dico.forEach(item => csvRows.push([item.type, item.val]));
+            } else if (choix === 'etab') {
+                filename = "SecteurPro_Etablissement.csv";
+                csvRows.push(["Batiment", "Etage", "Secteur", "Reference", "Surface"]);
+                DATA.etab.forEach(l => csvRows.push([l.bat, l.etage, l.secteur, l.ref, l.surface]));
+            } else if (choix === 'agents') {
+                filename = "SecteurPro_Agents.csv";
+                csvRows.push(["ID", "Nom", "Prenom", "Fonction"]);
+                DATA.agents.forEach(a => csvRows.push([a.id, a.nom, a.prenom, a.fonction]));
+            } else if (choix === 'affect') {
+                filename = "SecteurPro_Affectations.csv";
+                csvRows.push(["Agent", "Batiment", "Etage", "Secteur", "Reference", "Surface", "Temps"]);
+                
+                let affectationsParAgent = {};
+                DATA.affect.forEach(item => {
+                    if (!affectationsParAgent[item.agent]) affectationsParAgent[item.agent] = [];
+                    affectationsParAgent[item.agent].push(item);
+                });
+
+                Object.keys(affectationsParAgent).forEach(agent => {
+                    let totalSurf = 0;
+                    let totalTemps = 0;
+                    affectationsParAgent[agent].forEach(item => {
+                        const surface = parseFloat(item.local.surface) || 0;
+                        const cadence = CADENCES[item.local.ref] || {type: 'm2', val: 100};
+                        const temps = (cadence.type === 'm2') ? (surface / cadence.val) : (surface * cadence.val);
+                        totalSurf += surface;
+                        totalTemps += temps;
+                        csvRows.push([item.agent, item.local.bat, item.local.etage, item.local.secteur, item.local.ref, surface, convertirEnHeuresMinutes(temps)]);
+                    });
+                    // Ligne de total dans l'export CSV également
+                    csvRows.push([`TOTAL ${agent}`, "", "", "", "", `${totalSurf.toFixed(1)} m2`, convertirEnHeuresMinutes(totalTemps)]);
+                });
+            }
+
+            // Génération propre avec BOM UTF-8 (\uFEFF) pour éviter les soucis d'accents sous Excel
+            let csvContent = "\uFEFF" + csvRows.map(e => e.map(val => `"${val}"`).join(";")).join("\r\n");
+            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            let url = URL.createObjectURL(blob);
+            let link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         afficherDico(); afficherTableauEtab(); afficherTableauAgents(); afficherAffectations();
     </script>
