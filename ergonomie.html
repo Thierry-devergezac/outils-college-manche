@@ -163,7 +163,9 @@
     </style>
 </head>
 <body>
-
+<div class="fullscreen-container">
+    <button class="btn-fullscreen" onclick="basculerPleinEcran()">📺 Mode Plein Écran</button>
+</div>
     <div class="container">
         <!-- BOUTON RETOUR AU PORTAIL -->
         <div>
@@ -454,6 +456,19 @@
             };
             reader.readAsText(file);
         }
+        <script>
+    function basculerPleinEcran() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Erreur passage plein écran : ${err.message}`);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+</script>
     </script>
 </body>
 </html>
