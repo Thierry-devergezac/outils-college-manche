@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>SecteurPro - Console Master</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* LE STYLE RUSTIQUE MAIS COUSTAUD */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #0f172a; color: #e2e8f0; }
+        h2 { margin-top: 10px; margin-bottom: 5px; }
+        .signature { color: #64748b; font-size: 13px; margin-bottom: 25px; font-weight: 500; }
+        
+        /* Bouton Retour au Portail */
+        .btn-portail {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+        .btn-portail:hover {
+            background: #334155;
+            border-color: #3b82f6;
+        }
+        
+        /* Barre d'outils générale */
+        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #334155; flex-wrap: wrap; }
+        
+        /* Onglets */
+        .tabs { display: flex; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; transition: 0.2s; }
+        .tab-btn.active { background: #3b82f6; color: white; }
+        
+        /* Panneaux */
+        .panel { display: none; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
+        .panel.active { display: block; }
+        
+        /* Formulaires & Inputs */
+        select, input, textarea { background: #0f172a; border: 1px solid #475569; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 12px; font-size: 14px; }
+        select:focus, input:focus, textarea:focus { border-color: #3b82f6; outline: none; }
+        
+        /* Boutons */
+        button { background: #3b82f6; color: white; border: none; padding: 11px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        
+        /* Tableaux */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { border-bottom: 1px solid #334155; padding: 10px; text-align: left; vertical-align: middle; }
+        th { color: #94a3b8; text-transform: uppercase; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+        
+        /* Badges de Statut */
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; cursor: pointer; border: none; }
+        .badge-attente { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
+        .badge-cours { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .badge-resolu { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+
+        /* Utilitaires de disposition */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+        
+        .form-section-title { font-size: 16px; font-weight: bold; color: #38bdf8; margin: 20px 0 10px 0; border-bottom: 1px solid #334155; padding-bottom: 5px; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; background: #0f172a; padding: 15px; border-radius: 6px; border: 1px solid #475569; }
+        .checkbox-group label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #cbd5e1; cursor: pointer; }
+        
+        .constat-row { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 8px; margin-bottom: 12px; position: relative; }
+    </style>
+</head>
+<body>
+
+    <!-- BOUTON RETOUR AU PORTAIL -->
+    <div>
+        <a href="index.html" class="btn-portail">
+            <i class="fa-solid fa-house text-blue-400"></i> Retour au Portail Central
+        </a>
+    </div>
+
+    <h2>Console SecteurPro Master</h2>
+    <div class="signature">
+        <i class="fa-solid fa-user-pen"></i> Conception & Développement — Thierry de Vergezac
+    </div>
+
+    <!-- UTILS DE SAUVEGARDE ET RESTAURATION GENERALE -->
+    <div class="toolbar">
+        <button onclick="exporterTout()" style="background: #8b5cf6;"><i class="fa-solid fa-download"></i> Sauvegarder base (JSON)</button>
+        <label style="background: #f59e0b; padding: 11px 18px; border-radius: 6px; cursor: pointer; color: white; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-upload"></i> Importer base
+            <input type="file" onchange="importerTout(event)" style="display:none;">
+        </label>
+    </div>
+
+    <!-- NAVIGATION PAR ONGLETS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showPanel('p-secteurs')"><i class="fa-solid fa-layer-group"></i> Secteurs</button>
+        <button class="tab-btn" onclick="showPanel('p-agents')"><i class="fa-solid fa-users"></i> Agents</button>
+        <button class="tab-btn" onclick="showPanel('p-travaux')"><i class="fa-solid fa-screwdriver-wrench"></i> Travaux & Fiche Officielle</button>
+        <button class="tab-btn" onclick="showPanel('p-suivi')"><i class="fa-solid fa-list-check"></i> Suivi & Interventions</button>
+    </div>
+
+    <!-- BRIQUE 2 : GESTION DES SECTEURS -->
+    <div id="p-secteurs" class="panel active">
+        <h3>Gestion des Secteurs</h3>
+        <textarea id="excel-paste" rows="3" placeholder="Copie-colle ici tes lignes Excel directement (Bâtiment / Étage / Local)..."></textarea>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="parserExcel()"><i class="fa-solid fa-file-import"></i> Convertir et Ajouter</button>
+            <button onclick="viderBaseSecteurs()" style="background: #ef4444;"><i class="fa-solid fa-trash-can"></i> Tout supprimer</button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr><th>Bâtiment</th><th>Étage</th><th>Local</th><th style="width: 80px;">Action</th></tr>
+                </thead>
+                <tbody id="secteur-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- BRIQUE 3 : GESTION DES AGENTS -->
+    <div id="p-agents" class="panel">
+        <h3>Gestion des Agents</h3>
+        <div class="grid-2">
+            <input type="text" id="agent-nom" placeholder="Nom">
+            <input type="text" id="agent-prenom" placeholder="Prénom">
+        </div>
+        <div class="grid-2">
+            <input type="text" id="agent-fonction" placeholder="Fonction">
+            <input type="email" id="agent-mail" placeholder="Adresse email (Outlook)">
+        </div>
+        <button onclick="ajouterAgent()"><i class="fa-solid fa-user-plus"></i> Ajouter l'agent</button>
+        
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Nom</th><th>Prénom</th><th>Fonction</th><th>Email</th><th style="width: 80px;">Action</th></tr>
+                </thead>
+                <tbody id="agent-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- BRIQUE 4 & 5 : MOTEUR DE TRAVAUX OFFICIEL (MULTICIBLES / RONDE) -->
+    <div id="p-travaux" class="panel">
+        <h3>Génération Bon de Travaux Global (Visite d'Inspection / Ronde)</h3>
+        
+        <!-- PARAMÉTRAGE DU DESTINATAIRE EN COPIE (CC) -->
+        <div style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px;">
+            <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">
+                <i class="fa-solid fa-user-gear"></i> Paramétrage de l'établissement (Destinataire en Copie / CC - ex: Secrétaire Général)
+            </label>
+            <div style="display: flex; gap: 10px;">
+                <input type="email" id="config-cc" placeholder="Email en copie (ex: secretaire.general@etablissement.fr)" style="margin-bottom: 0;">
+                <button onclick="sauvegarderCC()" style="background: #10b981; white-space: nowrap;"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+            </div>
+        </div>
+
+        <!-- EN-TÊTE GLOBAL DE LA DEMANDE -->
+        <div class="form-section-title"><i class="fa-solid id-card"></i> Informations Générales de la Visite</div>
+        <div class="grid-2">
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Demandeur / Inspecteur</label>
+                <select id="demande-demandeur">
+                    <option value="Secrétaire Général">Secrétaire Général</option>
+                    <option value="Chef d'établissement">Chef d'établissement</option>
+                    <option value="Gestionnaire">Gestionnaire</option>
+                    <option value="Encadrant région">Encadrant région</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Agent Principal (AMP) ou Assigné</label>
+                <select id="select-agent-panne"></select>
+            </div>
+        </div>
+
+        <!-- PARTIE 1 : LISTE DES CONSTATS (MULTILIGNES) -->
+        <div class="form-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="fa-solid fa-list-check"></i> Partie 1 : Relevé des constats de ronde (Multi-locaux)</span>
+            <button onclick="ajouterLigneConstat()" style="background: #10b981; padding: 6px 12px; font-size: 12px;"><i class="fa-solid fa-plus"></i> Ajouter un constat</button>
+        </div>
+        
+        <div id="constats-container">
+            <!-- Les lignes de constats dynamiques s'inséreront ici -->
+        </div>
+
+        <!-- PARTIE 2 & 3 : ENCADRANT ET BILAN TECHNIQUE GLOBAL -->
+        <div class="form-section-title"><i class="fa-solid fa-user-tie"></i> Partie 2 & 3 : Validation & Paramètres d'Intervention</div>
+        
+        <div class="grid-2">
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Contrôle de l'encadrant</label>
+                <select id="encadrement-controle">
+                    <option value="Contrôlé par l'encadrant">Contrôlé par l'encadrant</option>
+                    <option value="Non Contrôlé par l'encadrant">Non contrôlé par l'encadrant</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Passage d'un contrôleur technique</label>
+                <select id="cr-controleur">
+                    <option value="NON">NON</option>
+                    <option value="OUI">OUI</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Date début prévisionnelle</label>
+                <input type="date" id="cr-date-debut" style="margin-bottom:0;">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Date fin prévisionnelle</label>
+                <input type="date" id="cr-date-fin" style="margin-bottom:0;">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Temps global estimé (h)</label>
+                <input type="number" id="cr-duree" placeholder="ex: 4" style="margin-bottom:0;">
+            </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 15px;">
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Sécurité des personnes</label>
+                <select id="cr-sec-personnes">
+                    <option value="NON">NON</option>
+                    <option value="OUI">OUI</option>
+                </select>
+                <textarea id="cr-sec-personnes-obs" placeholder="Préconisations..." rows="2" style="margin-top:5px;"></textarea>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Sécurité des biens</label>
+                <select id="cr-sec-biens">
+                    <option value="NON">NON</option>
+                    <option value="OUI">OUI</option>
+                </select>
+                <textarea id="cr-sec-biens-obs" placeholder="Préconisations..." rows="2" style="margin-top:5px;"></textarea>
+            </div>
+        </div>
+
+        <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-top:15px; margin-bottom:5px;">Outillages requis</label>
+        <div class="checkbox-group" id="outils-group">
+            <label><input type="checkbox" value="Léger"> Léger</label>
+            <label><input type="checkbox" value="Lourd"> Lourd</label>
+            <label><input type="checkbox" value="Échelle"> Échelle</label>
+            <label><input type="checkbox" value="Échafaudage"> Échafaudage</label>
+            <label><input type="checkbox" value="Nacelle"> Nacelle</label>
+            <label><input type="checkbox" value="PIR"> PIR</label>
+            <label><input type="checkbox" value="Outils spécifiques"> Outils spécifiques</label>
+        </div>
+
+        <label style="font-size: 12px; font-weight: bold; color: #94a3b8; display:block; margin-bottom:5px;">Certifications de travail</label>
+        <div class="checkbox-group" id="certifs-group">
+            <label><input type="checkbox" value="Habilitation électrique"> Habilitation électrique</label>
+            <label><input type="checkbox" value="CACES"> CACES</label>
+            <label><input type="checkbox" value="Travail en hauteur"> Travail en hauteur</label>
+            <label><input type="checkbox" value="Montage/démontage échafaudage"> Montage / démontage échafaudage</label>
+        </div>
+
+        <textarea id="cr-observations" placeholder="Observations globales de la visite d'inspection..." rows="3" style="margin-top:10px;"></textarea>
+        
+        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+            <button onclick="creerInterventionGlobale()"><i class="fa-solid fa-file-pdf"></i> Générer Fiche Globale & Préparer Mail</button>
+        </div>
+    </div>
+
+    <!-- BRIQUE 6 : TABLEAU DE SUIVI DES INTERVENTIONS -->
+    <div id="p-suivi" class="panel">
+        <h3>Tableau de Suivi des Interventions</h3>
+        <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;">
+            <div>
+                <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 3px;">Filtrer par statut :</label>
+                <select id="filtre-statut" onchange="afficherSuivi()" style="margin-bottom:0; width: 200px;">
+                    <option value="TOUS">Tous les statuts</option>
+                    <option value="En attente">En attente</option>
+                    <option value="En cours">En cours</option>
+                    <option value="Résolu">Résolu</option>
+                </select>
+            </div>
+            <button onclick="viderSuivi()" style="background: #ef4444; margin-top: 18px;"><i class="fa-solid fa-trash-can"></i> Vider l'historique</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>N° Bon</th>
+                        <th>Date</th>
+                        <th>Localisation(s) / Constats</th>
+                        <th>Agent Assigné</th>
+                        <th>Statut (Cliquer pour changer)</th>
+                        <th>Commentaires libres</th>
+                        <th style="width: 80px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="suivi-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Logique centralisée d'affichage des onglets
+        function showPanel(id) {  
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                if(btn.getAttribute('onclick').includes(id)) btn.classList.add('active');
+            });
+
+            if(id === 'p-travaux') {
+                rafraichirListes();
+                chargerCC();
+                if(document.querySelectorAll('.constat-row').length === 0) {
+                    ajouterLigneConstat(); // Ajoute une première ligne par défaut
+                }
+                const aujourdhui = new Date().toISOString().split('T')[0];
+                if(!document.getElementById('cr-date-debut').value) document.getElementById('cr-date-debut').value = aujourdhui;
+                if(!document.getElementById('cr-date-fin').value) document.getElementById('cr-date-fin').value = aujourdhui;
+            }
+            if(id === 'p-suivi') afficherSuivi();
+        }
+
+        // Brique 2 (Secteurs) - Parseur Excel
+        function parserExcel() {
+            let SECTEURS = JSON.parse(localStorage.getItem('secteurs_db') || '[]');
+            const texteColle = document.getElementById('excel-paste').value;
+            
+            if(!texteColle.trim()) { alert("Veuillez coller des données avant de convertir !"); return; }
+
+            texteColle.split('\n').forEach(l => {
+                let c = l.split('\t');
+                if(c.length >= 3) {
+                    SECTEURS.push({bat: c[0].trim(), etage: c[1].trim(), local: c[2].trim()});
+                }
+            });
+            localStorage.setItem('secteurs_db', JSON.stringify(SECTEURS));
+            document.getElementById('excel-paste').value = '';
+            afficherSecteurs();
+        }
+
+        function afficherSecteurs() {  
+            document.getElementById('secteur-body').innerHTML = JSON.parse(localStorage.getItem('secteurs_db')||'[]').map((s,i) => `
+                <tr>
+                    <td>${s.bat}</td><td>${s.etage}</td><td>${s.local}</td>
+                    <td><button onclick="supprimerLigne(${i})" style="background: #ef4444; padding: 5px 10px;"><i class="fa-solid fa-xmark"></i></button></td>
+                </tr>`).join('');
+        }
+
+        function supprimerLigne(i) {  
+            let s = JSON.parse(localStorage.getItem('secteurs_db'));  
+            s.splice(i,1);  
+            localStorage.setItem('secteurs_db', JSON.stringify(s));  
+            afficherSecteurs();  
+        }
+
+        function viderBaseSecteurs() {  
+            if(confirm("Voulez-vous vraiment vider toute la liste des secteurs ?")) {
+                localStorage.setItem('secteurs_db', '[]');  
+                afficherSecteurs();  
+            }
+        }
+
+        // Brique 3 (Agents)
+        function ajouterAgent() {
+            let AGENTS = JSON.parse(localStorage.getItem('agents_db') || '[]');
+            const nom = document.getElementById('agent-nom').value.trim();
+            const prenom = document.getElementById('agent-prenom').value.trim();
+            const fonction = document.getElementById('agent-fonction').value.trim();
+            const mail = document.getElementById('agent-mail').value.trim();
+
+            if(nom && prenom) {
+                AGENTS.push({
+                    id: 'AG-' + (AGENTS.length + 1), 
+                    nom: nom, 
+                    prenom: prenom, 
+                    fonction: fonction || '-', 
+                    mail: mail || 'non-renseigne@mail.com'
+                });
+                localStorage.setItem('agents_db', JSON.stringify(AGENTS));
+                
+                document.getElementById('agent-nom').value = '';
+                document.getElementById('agent-prenom').value = '';
+                document.getElementById('agent-fonction').value = '';
+                document.getElementById('agent-mail').value = '';
+                
+                afficherAgents();
+            } else {
+                alert("Le Nom et le Prénom de l'agent sont obligatoires !");
+            }
+        }
+
+        function afficherAgents() {  
+            document.getElementById('agent-body').innerHTML = JSON.parse(localStorage.getItem('agents_db')||'[]').map((a,i) => `
+                <tr>
+                    <td>${a.id}</td><td>${a.nom}</td><td>${a.prenom}</td><td>${a.fonction}</td><td>${a.mail}</td>
+                    <td><button onclick="supprimerAgent(${i})" style="background: #ef4444; padding: 5px 10px;"><i class="fa-solid fa-xmark"></i></button></td>
+                </tr>`).join('');  
+        }
+
+        function supprimerAgent(i) {  
+            let a = JSON.parse(localStorage.getItem('agents_db'));  
+            a.splice(i,1);  
+            localStorage.setItem('agents_db', JSON.stringify(a));  
+            afficherAgents();  
+        }
+
+        // Configuration de la copie (CC)
+        function sauvegarderCC() {
+            const ccMail = document.getElementById('config-cc').value.trim();
+            localStorage.setItem('config_cc_mail', ccMail);
+            alert("Adresse en copie (CC) enregistrée pour l'établissement !");
+        }
+
+        function chargerCC() {
+            const savedCC = localStorage.getItem('config_cc_mail') || '';
+            document.getElementById('config-cc').value = savedCC;
+        }
+
+        // Rafraichir les listes déroulantes d'agents
+        function rafraichirListes() {
+            const agents = JSON.parse(localStorage.getItem('agents_db')||'[]');
+            document.getElementById('select-agent-panne').innerHTML = agents.length > 0
+                ? agents.map(a => `<option value="${a.mail}|${a.nom} ${a.prenom}">${a.nom} ${a.prenom}</option>`).join('')
+                : '<option value="">Aucun agent disponible (à créer)</option>';
+        }
+
+        // --- GESTION DES CONSTATS DYNAMIQUES (MULTILIGNES) ---
+        function ajouterLigneConstat() {
+            const secteurs = JSON.parse(localStorage.getItem('secteurs_db')||'[]');
+            const optionsSecteurs = secteurs.length > 0 
+                ? secteurs.map(s => `<option value="${s.bat} - ${s.local}">${s.bat} - ${s.local} (${s.etage})</option>`).join('')
+                : '<option value="Local général">Local général / Autre</option>';
+
+            const container = document.getElementById('constats-container');
+            const div = document.createElement('div');
+            div.className = 'constat-row';
+            div.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: #ef4444; padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-trash"></i></button>
+                <div class="grid-3" style="margin-bottom: 5px;">
+                    <div>
+                        <label style="font-size: 11px; color: #94a3b8;">Localisation</label>
+                        <select class="c-local">${optionsSecteurs}</select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: #94a3b8;">Domaine</label>
+                        <select class="c-domaine">
+                            <option value="Électricité">Électricité</option>
+                            <option value="Plomberie">Plomberie</option>
+                            <option value="Chauffage">Chauffage</option>
+                            <option value="Sécurité incendie">Sécurité incendie</option>
+                            <option value="Menuiserie">Menuiserie</option>
+                            <option value="Peinture">Peinture</option>
+                            <option value="Manutention">Manutention</option>
+                            <option value="Toiture">Toiture</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: #94a3b8;">Priorité / Délai</label>
+                        <select class="c-priorite">
+                            <option value="Urgent (Sécurité)">Urgent (Sécurité)</option>
+                            <option value="Confort (Dans la semaine)" selected>Confort (Dans la semaine)</option>
+                            <option value="Améliorative (Mois)">Améliorative (Mois)</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea class="c-desc" rows="2" placeholder="Description précise de l'anomalie constatée..."></textarea>
+            `;
+            container.appendChild(div);
+        }
+
+        // Création d'intervention globale (Ronde d'inspection)
+        function creerInterventionGlobale() {  
+            const selectAgentVal = document.getElementById('select-agent-panne').value;
+            const demandeur = document.getElementById('demande-demandeur').value;
+            const controleEnc = document.getElementById('encadrement-controle').value;
+            const dateDebut = document.getElementById('cr-date-debut').value;
+            const dateFin = document.getElementById('cr-date-fin').value;
+            const duree = document.getElementById('cr-duree').value;
+            const controleur = document.getElementById('cr-controleur').value;
+            const secPersonnes = document.getElementById('cr-sec-personnes').value;
+            const secPersonnesObs = document.getElementById('cr-sec-personnes-obs').value;
+            const secBiens = document.getElementById('cr-sec-biens').value;
+            const secBiensObs = document.getElementById('cr-sec-biens-obs').value;
+            const observations = document.getElementById('cr-observations').value;
+
+            // Récupération de toutes les lignes de constats
+            const lignesConstats = document.querySelectorAll('.constat-row');
+            if (lignesConstats.length === 0) { alert("Veuillez ajouter au moins un constat de ronde !"); return; }
+            if (!selectAgentVal) { alert("Veuillez assigner un agent principal !"); return; }
+
+            let constatsData = [];
+            lignesConstats.forEach(row => {
+                constatsData.push({
+                    local: row.querySelector('.c-local').value,
+                    domaine: row.querySelector('.c-domaine').value,
+                    priorite: row.querySelector('.c-priorite').value,
+                    desc: row.querySelector('.c-desc').value.trim() || 'Intervention de maintenance courante'
+                });
+            });
+
+            const [mail, agentNom] = selectAgentVal.split('|');
+            const numeroBon = Math.floor(100 + Math.random() * 900);
+            const dateJour = new Date().toLocaleDateString();
+
+            // Résumé texte pour le suivi
+            const resumeLocalisations = constatsData.map(c => `[${c.domaine}] ${c.local}`).join(' — ');
+
+            // 1. Enregistrement dans l'historique du Suivi
+            let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+            const nouvelleIntervention = {
+                id: numeroBon,
+                date: dateJour,
+                secteur: `${constatsData.length} constat(s) : ${resumeLocalisations}`,
+                domaine: 'Visite / Multi-domaines',
+                agent: agentNom,
+                desc: constatsData[0].desc,
+                statut: 'En attente',
+                motif: '',
+                commentaire: ''
+            };
+            interventions.unshift(nouvelleIntervention);
+            localStorage.setItem('interventions_db', JSON.stringify(interventions));
+
+            // Récupération des checkboxes cochées
+            const outilsCoches = Array.from(document.querySelectorAll('#outils-group input:checked')).map(el => el.value);
+            const certifsCoches = Array.from(document.querySelectorAll('#certifs-group input:checked')).map(el => el.value);
+
+            // 2. Génération de la fenêtre d'impression globale
+            let win = window.open('','_blank');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Bon de Travaux Global n°${numeroBon}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #111; font-size: 13px; line-height: 1.4; }
+                        .header { border-bottom: 2px solid #0a2540; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+                        h1 { color: #0a2540; margin: 0; font-size: 20px; }
+                        h2 { background: #e2e8f0; color: #0f172a; padding: 6px 10px; font-size: 14px; margin: 15px 0 10px 0; border-left: 4px solid #3b82f6; }
+                        .box { border: 1px solid #cbd5e1; padding: 10px; border-radius: 4px; margin-bottom: 10px; background: #f8fafc; }
+                        .label { font-weight: bold; color: #334155; }
+                        .grid-2 { display: flex; gap: 15px; margin-bottom: 8px; }
+                        .grid-2 > div { flex: 1; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
+                        th { background: #f1f5f9; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <h1>BON DE TRAVAUX GLOBAL (RONDE / INSPECTION)</h1>
+                            <p style="margin:2px 0 0 0;">Référence N°${numeroBon} — Date d'émission : ${dateJour}</p>
+                        </div>
+                        <div style="text-align: right; font-weight: bold; color: #0a2540;">
+                            Département de la Manche
+                        </div>
+                    </div>
+
+                    <!-- PARTIE 1 : TABLEAU DES CONSTATS -->
+                    <h2>PARTIE 1 : RELEVÉ DES CONSTATS DE VISITE (${constatsData.length} éléments)</h2>
+                    <div class="box">
+                        <p><span class="label">Demandeur :</span> ${demandeur}</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Localisation</th>
+                                    <th>Domaine</th>
+                                    <th>Priorité / Délai</th>
+                                    <th>Description de l'anomalie</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${constatsData.map(c => `
+                                    <tr>
+                                        <td><b>${c.local}</b></td>
+                                        <td>${c.domaine}</td>
+                                        <td>${c.priorite}</td>
+                                        <td>${c.desc}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- PARTIE 2 -->
+                    <h2>PARTIE 2 : ENCADRANT DU SERVICE GÉNÉRAL ET TECHNIQUE</h2>
+                    <div class="box">
+                        <div class="grid-2">
+                            <div><span class="label">Agent principal / AMP assigné :</span> ${agentNom}</div>
+                            <div><span class="label">Vérification :</span> ${controleEnc}</div>
+                        </div>
+                        <p style="margin: 6px 0 0 0;"><span class="label">Date de transmission :</span> ${dateJour}</p>
+                    </div>
+
+                    <!-- PARTIE 3 -->
+                    <h2>PARTIE 3 : CADRE GLOBAL DES TRAVAUX À RÉALISER</h2>
+                    <div class="box">
+                        <div class="grid-2">
+                            <div><span class="label">Agent(s) intervenant(s) :</span> ${agentNom}</div>
+                            <div><span class="label">Contrôleur technique :</span> ${controleur}</div>
+                        </div>
+                        <div class="grid-2" style="margin-top: 6px;">
+                            <div><span class="label">Date début :</span> ${dateDebut} | <span class="label">Date fin :</span> ${dateFin}</div>
+                            <div><span class="label">Durée estimée :</span> ${duree || '-'} h</div>
+                        </div>
+
+                        <hr style="border:0; border-top:1px solid #cbd5e1; margin:10px 0;">
+                        
+                        <p><strong>Sécurité des personnes :</strong> ${secPersonnes} ${secPersonnesObs ? '— ' + secPersonnesObs : ''}</p>
+                        <p><strong>Sécurité des biens :</strong> ${secBiens} ${secBiensObs ? '— ' + secBiensObs : ''}</p>
+                        
+                        <p style="margin-top:8px;"><span class="label">Outillages utilisés :</span> ${outilsCoches.length > 0 ? outilsCoches.join(', ') : 'Aucun outillage particulier'}</p>
+                        <p><span class="label">Certifications requises :</span> ${certifsCoches.length > 0 ? certifsCoches.join(', ') : 'Aucune certification spécifique'}</p>
+
+                        <p style="margin: 8px 0 2px 0;"><span class="label">Observations globales :</span></p>
+                        <p style="background: #fff; padding: 8px; border: 1px solid #e2e8f0; margin: 4px 0 0 0; white-space: pre-wrap;">${observations || 'Travaux de ronde planifiés.'}</p>
+                    </div>
+
+                    <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                        <div style="width: 45%; border-top: 1px solid #475569; padding-top: 5px; text-align: center;">Signature du Demandeur (SG / Direction)</div>
+                        <div style="width: 45%; border-top: 1px solid #475569; padding-top: 5px; text-align: center;">Signature de l'Encadrement / Intervenants</div>
+                    </div>
+                </body>
+                </html>
+            `);
+            win.document.close();
+            win.print();
+
+            // 3. Préparation du lien mailto Outlook
+            const ccMail = localStorage.getItem('config_cc_mail') || '';
+            const sujet = encodeURIComponent(`Bon de travaux global n°${numeroBon} - Visite d'inspection`);
+            const corps = encodeURIComponent(`Bonjour ${agentNom},\n\nUn nouveau bon de travaux global n°${numeroBon} recensant ${constatsData.length} constat(s) suite à visite a été généré.\n\nPensez à glisser le PDF de l'intervention globale dans ce message.\n\nCordialement,\nL'administration.`);
+            
+            let mailtoLink = `mailto:${mail}?subject=${sujet}&body=${corps}`;
+            if(ccMail.trim() !== '') {
+                mailtoLink += `&cc=${encodeURIComponent(ccMail.trim())}`;
+            }
+
+            window.location.href = mailtoLink;
+
+            // Réinitialisation et redirection vers le suivi
+            document.getElementById('constats-container').innerHTML = '';
+            ajouterLigneConstat();
+            showPanel('p-suivi');
+        }
+
+        // Affichage et gestion du Tableau de Suivi
+        function afficherSuivi() {
+            const filtre = document.getElementById('filtre-statut').value;
+            let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+
+            if(filtre !== 'TOUS') {
+                interventions = interventions.filter(item => item.statut === filtre);
+            }
+
+            const tbody = document.getElementById('suivi-body');
+            if(interventions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">Aucune intervention enregistrée.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = interventions.map((item) => {
+                let badgeClass = 'badge-attente';
+                if(item.statut === 'En cours') badgeClass = 'badge-cours';
+                if(item.statut === 'Résolu') badgeClass = 'badge-resolu';
+
+                let motifHtml = item.motif ? `<br><small style="color: #cbd5e1; font-style: italic; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-circle-info"></i> ${item.motif}</small>` : '';
+                let commentaireVal = item.commentaire || '';
+
+                return `
+                    <tr>
+                        <td><strong>#${item.id}</strong></td>
+                        <td>${item.date}</td>
+                        <td>${item.secteur}</td>
+                        <td>${item.agent}</td>
+                        <td>
+                            <button class="badge ${badgeClass}" onclick="changerStatut(${item.id})" title="Cliquer pour basculer le statut">
+                                ${item.statut} <i class="fa-solid fa-rotate"></i>
+                            </button>
+                            ${motifHtml}
+                        </td>
+                        <td>
+                            <textarea rows="2" placeholder="Ajouter une note..." oninput="mettreAJourCommentaire(${item.id}, this.value)" style="margin-bottom:0; font-size: 13px;">${commentaireVal}</textarea>
+                        </td>
+                        <td><button onclick="supprimerIntervention(${item.id})" style="background: #ef4444; padding: 5px 10px;"><i class="fa-solid fa-trash"></i></button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function mettreAJourCommentaire(id, texte) {
+            let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+            const index = interventions.findIndex(item => item.id === id);
+            if(index !== -1) {
+                interventions[index].commentaire = texte;
+                localStorage.setItem('interventions_db', JSON.stringify(interventions));
+            }
+        }
+
+        function changerStatut(id) {
+            let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+            const index = interventions.findIndex(item => item.id === id);
+            
+            if(index !== -1) {
+                if(interventions[index].statut === 'En attente') {
+                    interventions[index].statut = 'En cours';
+                    const motifSaisi = prompt("Précisez le motif 'En cours' (ex: Pièce commandée, En attente prestataire...) :", interventions[index].motif || "Pièce commandée");
+                    interventions[index].motif = motifSaisi !== null ? motifSaisi.trim() : "En cours";
+                } else if(interventions[index].statut === 'En cours') {
+                    interventions[index].statut = 'Résolu';
+                    interventions[index].motif = '';
+                } else {
+                    interventions[index].statut = 'En attente';
+                    interventions[index].motif = '';
+                }
+                localStorage.setItem('interventions_db', JSON.stringify(interventions));
+                afficherSuivi();
+            }
+        }
+
+        function supprimerIntervention(id) {
+            if(confirm("Voulez-vous supprimer cette intervention du suivi ?")) {
+                let interventions = JSON.parse(localStorage.getItem('interventions_db') || '[]');
+                interventions = interventions.filter(item => item.id !== id);
+                localStorage.setItem('interventions_db', JSON.stringify(interventions));
+                afficherSuivi();
+            }
+        }
+
+        function viderSuivi() {
+            if(confirm("Voulez-vous vraiment effacer tout l'historique des interventions ?")) {
+                localStorage.setItem('interventions_db', '[]');
+                afficherSuivi();
+            }
+        }
+
+        function exporterTout() {
+            const data = {
+                secteurs: JSON.parse(localStorage.getItem('secteurs_db') || '[]'),
+                agents: JSON.parse(localStorage.getItem('agents_db') || '[]'),
+                interventions: JSON.parse(localStorage.getItem('interventions_db') || '[]'),
+                configCC: localStorage.getItem('config_cc_mail') || ''
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'SecteurPro_Master_Backup.json';
+            a.click();
+        }
+
+        function importerTout(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(data.secteurs && data.agents) {
+                        localStorage.setItem('secteurs_db', JSON.stringify(data.secteurs));
+                        localStorage.setItem('agents_db', JSON.stringify(data.agents));
+                        if(data.interventions) localStorage.setItem('interventions_db', JSON.stringify(data.interventions));
+                        if(data.configCC) localStorage.setItem('config_cc_mail', data.configCC);
+                        alert("Importation réussie de la base SecteurPro !");
+                        location.reload();
+                    } else {
+                        alert("Format de fichier invalide.");
+                    }
+                } catch(err) {
+                    alert("Erreur lors de la lecture du fichier de sauvegarde.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Chargement initial au démarrage
+        afficherSecteurs(); 
+        afficherAgents();
+        chargerCC();
+    </script>
+</body>
+</html>
