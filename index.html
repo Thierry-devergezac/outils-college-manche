@@ -30,8 +30,27 @@
         p.subtitle {
             text-align: center;
             color: #a9c6ff;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             font-size: 16px;
+        }
+        .fullscreen-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn-fullscreen {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+        .btn-fullscreen:hover {
+            background-color: #2563eb;
         }
         .grid {
             display: grid;
@@ -87,6 +106,11 @@
     <div class="container">
         <h1>Portail Central — établissement scolaire</h1>
         <p class="subtitle">Sélectionnez le module à lancer pour vos interventions</p>
+
+        <!-- Bouton Plein Écran -->
+        <div class="fullscreen-container">
+            <button class="btn-fullscreen" onclick="basculerPleinEcran()">📺 Mode Plein Écran</button>
+        </div>
 
         <div class="grid">
             <!-- 1. Gestion des produits -->
@@ -165,6 +189,20 @@
             Thierry de Vegerezac
         </div>
     </div>
+
+    <script>
+        function basculerPleinEcran() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erreur passage plein écran : ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+    </script>
 
 </body>
 </html>
