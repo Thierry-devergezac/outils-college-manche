@@ -10,8 +10,14 @@
         h2 { margin-top: 10px; margin-bottom: 5px; }
         .signature { color: #64748b; font-size: 13px; margin-bottom: 25px; font-weight: 500; }
         
-        /* Bouton Retour au Portail */
-        .btn-portail {
+        /* Boutons Haut de Page (Portail & Plein Écran) */
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .btn-portail, .btn-fullscreen {
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -23,12 +29,16 @@
             font-size: 13px;
             font-weight: 600;
             text-decoration: none;
-            margin-bottom: 20px;
+            cursor: pointer;
             transition: 0.2s;
         }
-        .btn-portail:hover {
+        .btn-portail:hover, .btn-fullscreen:hover {
             background: #334155;
             border-color: #3b82f6;
+        }
+        .btn-fullscreen {
+            background-color: #1e293b;
+            color: #38bdf8;
         }
         
         /* Barre d'outils générale */
@@ -76,11 +86,14 @@
 </head>
 <body>
 
-    <!-- BOUTON RETOUR AU PORTAIL -->
-    <div>
+    <!-- BOUTONS HAUT DE PAGE (RETOUR & PLEIN ÉCRAN) -->
+    <div class="top-actions">
         <a href="index.html" class="btn-portail">
             <i class="fa-solid fa-house text-blue-400"></i> Retour au Portail Central
         </a>
+        <button class="btn-fullscreen" onclick="basculerPleinEcran()">
+            <i class="fa-solid fa-expand"></i> Mode Plein Écran
+        </button>
     </div>
 
     <h2>Console SecteurPro Master</h2>
@@ -781,6 +794,19 @@
                 }
             };
             reader.readAsText(file);
+        }
+
+        // Fonction magique pour basculer en plein écran
+        function basculerPleinEcran() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erreur passage plein écran : ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
         }
 
         // Chargement initial au démarrage
