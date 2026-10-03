@@ -20,8 +20,14 @@
             padding: 30px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
         }
-        /* Style du bouton Retour au Portail */
-        .btn-portail {
+        /* Style des boutons en haut (Portail & Plein Écran) */
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .btn-portail, .btn-fullscreen {
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -33,11 +39,18 @@
             font-size: 14px;
             font-weight: bold;
             text-decoration: none;
-            margin-bottom: 20px;
+            cursor: pointer;
             transition: background 0.2s;
         }
-        .btn-portail:hover {
+        .btn-portail:hover, .btn-fullscreen:hover {
             background-color: #003388;
+        }
+        .btn-fullscreen {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .btn-fullscreen:hover {
+            background-color: #2563eb;
         }
         h1 {
             text-align: center;
@@ -203,7 +216,7 @@
                 padding: 0;
                 max-width: 100%;
             }
-            .btn-portail, .file-actions, .subtitle {
+            .top-actions, .file-actions, .subtitle {
                 display: none;
             }
             .header-grid {
@@ -251,11 +264,14 @@
 <body>
 
     <div class="container">
-        <!-- BOUTON RETOUR AU PORTAIL -->
-        <div>
+        <!-- BOUTONS HAUT DE PAGE -->
+        <div class="top-actions">
             <a href="index.html" class="btn-portail">
                 ⬅ Retour au Portail Central
             </a>
+            <button class="btn-fullscreen" onclick="basculerPleinEcran()">
+                📺 Mode Plein Écran
+            </button>
         </div>
 
         <h1>Fiche de Renseignement - Entretien & Terrain</h1>
@@ -588,6 +604,19 @@
                 event.target.value = "";
             };
             reader.readAsText(file);
+        }
+
+        // Fonction magique pour basculer en plein écran
+        function basculerPleinEcran() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erreur passage plein écran : ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
         }
 
         window.onload = function() {
