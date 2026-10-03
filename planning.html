@@ -26,6 +26,34 @@
         header h1 { margin: 0; font-size: 20px; color: #ffffff; }
         header .createur { font-size: 13px; color: #94a3b8; font-style: italic; }
         
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-action {
+            background: #334155;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-action:hover {
+            background: #475569;
+        }
+        .btn-fullscreen {
+            background: #3b82f6;
+        }
+        .btn-fullscreen:hover {
+            background: #2563eb;
+        }
+        
         nav { 
             display: flex; 
             gap: 10px; 
@@ -140,8 +168,9 @@
 </head>
 <body>
     <header>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <a href="index.html" style="background: #334155; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 14px;">⬅ Retour Portail</a>
+        <div class="header-actions">
+            <a href="index.html" class="btn-action">⬅ Retour Portail</a>
+            <button class="btn-action btn-fullscreen" onclick="basculerPleinEcran()">📺 Mode Plein Écran</button>
             <h1>🗓️ Gestionnaire de Temps de travail des agents des collèges</h1>
         </div>
         <div class="createur">Conçu par Thierry de Vegerezac</div>
@@ -333,7 +362,6 @@
                         }
                     }
                 }
-                // Ajout des heures supp (peu importe le jour, avec majoration)
                 supp.forEach(s => {
                     let [shh, smm] = (s.heures || "00:00").split(':').map(Number);
                     let baseMin = (shh * 60) + (smm || 0);
@@ -586,7 +614,7 @@
             const elements = {
                 'liste-regimes': CONFIG.regimes.map((r, i) => `<li>${r.nom} <button onclick="chargerRegime(${i})">Modifier</button> <button onclick="supprimerRegime(${i})">X</button></li>`).join(''),
                 'liste-feries': CONFIG.feries.map((f, i) => `<li>${f.date}: ${f.nom} <button onclick="supprimerFerie(${i})">X</button></li>`).join(''),
-                'liste-exceptions': CONFIG.exceptions.map((e, i) => `<li>${e.date}: ${e.valeur} demi-journée(s) <button onclick="supprimerException(${i})">X</button></li>`).join(''),
+                'liste-exceptions': CONFIG.exceptions.exceptions ? '' : CONFIG.exceptions.map((e, i) => `<li>${e.date}: ${e.valeur} demi-journée(s) <button onclick="supprimerException(${i})">X</button></li>`).join(''),
                 'liste-supp': CONFIG.heuresSupp.map((s, i) => `<li>${s.date}: +${s.heures} (coef x${s.majoration}) <button onclick="supprimerSupp(${i})">X</button></li>`).join(''),
                 'liste-evenements': CONFIG.evenements ? CONFIG.evenements.map((e, i) => `<li>${e.date}: ${e.type} <button onclick="supprimerEvenement(${i})">X</button></li>`).join('') : '',
                 'liste-temps-partiel': CONFIG.tempsPartiel ? CONFIG.tempsPartiel.map((tp, i) => `<li>Du ${tp.debut} au ${tp.fin} : ${tp.quotite}% <button onclick="supprimerTempsPartiel(${i})">X</button></li>`).join('') : ''
@@ -775,6 +803,19 @@
             localStorage.setItem('baron_config', JSON.stringify(CONFIG));
             majAffichage();
             confirmerAction("Nettoyage effectué !");
+        }
+
+        // Fonction magique pour basculer en plein écran
+        function basculerPleinEcran() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erreur passage plein écran : ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
         }
 
         majAffichage();
