@@ -7,8 +7,15 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #0f172a; color: #e2e8f0; }
         h2 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
-        /* Style du bouton Retour au Portail */
-        .btn-portail {
+        
+        /* Boutons Haut de Page (Portail & Plein Écran) */
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .btn-portail, .btn-fullscreen {
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -20,13 +27,18 @@
             font-size: 13px;
             font-weight: 600;
             text-decoration: none;
-            margin-bottom: 20px;
+            cursor: pointer;
             transition: 0.2s;
         }
-        .btn-portail:hover {
+        .btn-portail:hover, .btn-fullscreen:hover {
             background: #334155;
             border-color: #3b82f6;
         }
+        .btn-fullscreen {
+            background-color: #1e293b;
+            color: #38bdf8;
+        }
+
         .tabs { display: flex; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; flex-wrap: wrap; }
         .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #334155; color: #94a3b8; border-radius: 8px; font-weight: 600; }
         .tab-btn.active { background: #3b82f6; color: white; }
@@ -44,11 +56,14 @@
 </head>
 <body>
 
-    <!-- BOUTON RETOUR AU PORTAIL -->
-    <div>
+    <!-- BOUTONS HAUT DE PAGE (RETOUR & PLEIN ÉCRAN) -->
+    <div class="top-actions">
         <a href="index.html" class="btn-portail">
             <i class="fa-solid fa-house text-blue-400"></i> Retour au Portail Central
         </a>
+        <button class="btn-fullscreen" onclick="basculerPleinEcran()">
+            <i class="fa-solid fa-expand"></i> Mode Plein Écran
+        </button>
     </div>
 
     <h2>SecteurPro : Gestion des Affectations</h2>
@@ -290,6 +305,19 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        // Fonction magique pour basculer en plein écran
+        function basculerPleinEcran() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erreur passage plein écran : ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
         }
 
         afficherDico(); afficherTableauEtab(); afficherTableauAgents(); afficherAffectations();
