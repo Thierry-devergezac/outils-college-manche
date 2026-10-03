@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Planning Annuel</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #0f172a; 
+            color: #e2e8f0; 
+            padding: 20px; 
+            margin: 0; 
+        }
+        header { 
+            background: #1e293b; 
+            padding: 18px 25px; 
+            border-radius: 12px; 
+            border-left: 4px solid #3b82f6; 
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+        }
+        header h1 { margin: 0; font-size: 20px; color: #ffffff; }
+        header .createur { font-size: 13px; color: #94a3b8; font-style: italic; }
+        
+        nav { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 25px; 
+            background: #1e293b; 
+            padding: 12px; 
+            border-radius: 12px; 
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+            justify-content: center; 
+        }
+        nav button { 
+            background: #334155; 
+            color: #94a3b8; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 14px;
+            transition: background 0.2s, color 0.2s;
+        }
+        nav button:hover { background: #475569; color: white; }
+        nav button.active { background: #3b82f6; color: white; }
+
+        #recap, #parametres { 
+            background: #1e293b; 
+            padding: 30px; 
+            border-radius: 12px; 
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+            color: #e2e8f0; 
+            max-width: 900px; 
+            margin: 20px auto; 
+        }
+        
+        #parametres div[style*="background"] {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+            border: 1px solid #334155 !important;
+            padding: 15px !important;
+            margin: 15px 0 !important;
+            border-radius: 8px;
+        }
+        #parametres h3, #parametres h4, #parametres strong, #parametres label, #parametres li { 
+            color: #f8fafc !important; 
+        }
+        #parametres input, #parametres select { 
+            background-color: #0f172a; 
+            color: white; 
+            border: 1px solid #475569; 
+            padding: 10px; 
+            border-radius: 6px; 
+        }
+
+        .calendar-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; }
+        .month-col { background: #1e293b; border-radius: 10px; padding: 10px; min-width: 100px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .month-title { background: #0f172a; padding: 8px; text-align: center; font-weight: bold; margin-bottom: 8px; border-radius: 6px; border-bottom: 2px solid #334155; color: #f8fafc; }
+        .day-row { display: flex; border-bottom: 1px solid #334155; font-size: 11px; height: 24px; align-items: center; padding: 0 4px; }
+        .day-num { width: 24px; font-weight: bold; color: #94a3b8; }
+        .day-type { flex-grow: 1; text-align: right; color: #cbd5e1; font-weight: 500; }
+
+        ul button { background: #334155 !important; color: #e2e8f0 !important; border: none !important; padding: 4px 10px !important; font-size: 11px !important; border-radius: 6px !important; cursor: pointer; }
+        ul button:hover { background: #475569 !important; }
+
+        .couleur-ferie { background-color: rgba(239, 68, 68, 0.2) !important; color: #fca5a5 !important; }
+        .couleur-weekend { background-color: rgba(51, 65, 85, 0.4) !important; color: #94a3b8 !important; }
+        .couleur-travail { background-color: rgba(59, 130, 246, 0.2) !important; color: #93c5fd !important; }
+        .couleur-ca { background-color: rgba(16, 185, 129, 0.2) !important; color: #6ee7b7 !important; }
+        .couleur-tr { background-color: rgba(234, 179, 8, 0.2) !important; color: #fde047 !important; }
+        .couleur-rtt { background-color: rgba(249, 115, 22, 0.2) !important; color: #fdba74 !important; }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 5mm;
+            }
+            body { 
+                background: white !important; 
+                color: black !important; 
+                padding: 0 !important; 
+                zoom: 0.80; 
+            }
+            header, nav, #parametres, #recap { display: none !important; }
+            #app { 
+                display: flex !important; 
+                flex-wrap: nowrap !important; 
+                gap: 6px !important; 
+                overflow: visible !important;
+                width: 100% !important;
+            }
+            .month-col { 
+                break-inside: avoid; 
+                border: 1px solid #999 !important; 
+                box-shadow: none !important; 
+                padding: 5px !important;
+                min-width: 80px !important;
+                background: white !important;
+            }
+            .month-title { background: #eee !important; color: black !important; border-bottom: 2px solid #999 !important; }
+            .day-row { border-bottom: 1px solid #ddd !important; }
+            .day-num { color: #333 !important; }
+            .day-type { color: #000 !important; }
+            .couleur-ferie { background-color: #ffe4e6 !important; color: black !important; }
+            .couleur-weekend { background-color: #f1f5f9 !important; color: black !important; }
+            .couleur-travail { background-color: #e0f2fe !important; color: black !important; }
+            .couleur-ca { background-color: #dcfce7 !important; color: black !important; }
+            .couleur-tr { background-color: #fef9c3 !important; color: black !important; }
+            .couleur-rtt { background-color: #ffedd5 !important; color: black !important; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🗓️ Gestionnaire de Temps de travail des agents des collèges</h1>
+        <div class="createur">Conçu par Thierry de Vegerezac</div>
+    </header>
+
+    <nav>
+        <button id="btn-planning" onclick="afficherSection('planning')">Planning</button>
+        <button id="btn-recap" onclick="afficherSection('recap')">Récapitulatif</button>
+        <button id="btn-parametres" onclick="afficherSection('parametres')">Paramètres</button>
+    </nav>
+
+    <div class="calendar-container" id="app"></div>
+
+    <div id="recap" style="display:none;">
+        <h3>Récapitulatif Annuel</h3>
+        <div id="recap-content"></div>
+    </div>
+
+    <div id="parametres" style="display:none;">
+        <h3>Configuration des Régimes (Semaine Type)</h3>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <input type="text" id="regime-nom" placeholder="Nom du régime" style="flex: 1;">
+            <div style="white-space: nowrap; font-size: 13px;">
+                <input type="radio" name="regime-type" value="Travail" checked onclick="genererCalendrier()"> Travail
+                <input type="radio" name="regime-type" value="CA" onclick="genererCalendrier()"> CA
+                <input type="radio" name="regime-type" value="TR" onclick="genererCalendrier()"> TR
+            </div>
+        </div> 
+        <div style="margin-bottom: 15px;"><input type="text" id="regime-code" placeholder="Code" style="width: 100%; box-sizing: border-box;"></div>
+        <button onclick="ajouterRegime()">Enregistrer le régime</button>
+        <div id="form-hebdo" style="margin-top: 15px;"></div>
+
+        <div style="border: 1px solid #334155; padding: 15px; margin: 20px 0; background-color: #0f172a;">
+            <h4>Ajustements de temps :</h4>
+            <div style="margin-bottom: 10px;">
+                <strong>Heures Supp. (avec majoration OARTT) :</strong><br>
+                <input type="date" id="date-supp"> 
+                <input type="time" id="heures-supp" step="1"> 
+                <select id="type-majoration">
+                    <option value="1.25">Semaine / Samedi (x1,25)</option>
+                    <option value="2.5">Nuit 22h-7h (x2,5)</option>
+                    <option value="2.0">Dimanche / Férié (x2,0)</option>
+                </select>
+                <button onclick="ajouterHeuresSupp()">Ajouter</button>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong>Exceptions (Enfant Malade) :</strong>
+                <input type="date" id="date-exception"> 
+                <select id="type-exception"><option value="0.5">Demi-journée</option><option value="1">Journée complète</option></select>
+                <button onclick="validerException()">Appliquer</button>
+            </div>
+            <div>
+                <strong>Événements de vie :</strong>
+                <input type="date" id="date-evenement"> 
+                <input type="text" id="type-evenement" placeholder="Ex: Mariage...">
+                <button onclick="validerEvenement()">Ajouter</button>
+                <ul id="liste-evenements"></ul>
+            </div>
+            <ul id="liste-supp"></ul>
+            <ul id="liste-exceptions"></ul>
+        </div>
+
+        <div style="border: 1px solid #334155; padding: 15px; margin: 20px 0; background-color: #0f172a;">
+            <h4>Période de Temps Partiel (Indicatif) :</h4>
+            Du <input type="date" id="tp-debut"> au <input type="date" id="tp-fin"> 
+            Quotité : <select id="tp-quotite">
+                <option value="90">90%</option>
+                <option value="80">80%</option>
+                <option value="70">70%</option>
+                <option value="60">60%</option>
+                <option value="50">50%</option>
+            </select>
+            <button onclick="ajouterTempsPartiel()">Enregistrer</button>
+            <ul id="liste-temps-partiel" style="margin-top: 10px;"></ul>
+        </div>
+
+        <div style="border: 1px solid #334155; padding: 15px; margin: 20px 0;">
+            <h4>Affecter un régime ou une période :</h4>
+            <select id="select-regime-period"></select> Du <input type="date" id="date-debut-p"> au <input type="date" id="date-fin-p"> <button onclick="affecterPeriode()">Affecter</button>
+        </div>
+        <h3>Gestion</h3>
+        <ul id="liste-regimes"></ul>
+        <div style="margin: 15px 0;">
+            <input type="date" id="date-ferie"> <button onclick="ajouterFerie()">Ajouter Férié</button>
+        </div>
+        <ul id="liste-feries"></ul>
+        <div style="margin: 15px 0;">
+            <button onclick="nettoyerAffectationsInvalides()">Nettoyer les erreurs VAC</button>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; border-top: 2px solid #334155; background: #0f172a;">
+            <h4>Sauvegarde & Restauration :</h4>
+            <button onclick="exporterJSON()">Sauvegarder (JSON)</button>
+            <button onclick="document.getElementById('import-file').click()">Récupérer (Importer)</button>
+            <input type="file" id="import-file" style="display:none" onchange="importerJSON(event)">
+            <button onclick="exporterPDFCalendrier()" style="background: #f59e0b; color: white;">Exporter Planning (PDF)</button>
+            <button onclick="exporterExcelRecap()" style="background: #0ea5e9; color: white;">Exporter Récap (Excel/CSV)</button>
+        </div>
+    </div>    
+
+    <script>
+        function confirmerAction(message) {
+            const div = document.createElement('div');
+            div.innerText = message;
+            div.style.position = 'fixed';
+            div.style.top = '10px';
+            div.style.right = '10px';
+            div.style.background = '#10b981';
+            div.style.color = '#fff';
+            div.style.padding = '15px 25px';
+            div.style.borderRadius = '8px';
+            div.style.zIndex = '99999';
+            div.style.fontWeight = 'bold';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2000);
+        }
+
+        const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+        const joursNoms = ["D", "L", "M", "Me", "J", "V", "S"];
+        const moisNoms = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+        const joursIndex = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+        
+        const formHebdo = document.getElementById('form-hebdo');
+        jours.forEach(j => {
+            formHebdo.innerHTML += `<div style="border-bottom: 1px solid #334155; padding: 5px 0;">
+                <strong>${j}</strong> <button type="button" onclick="copierJour('${j}')">Copier depuis...</button><br>
+                Matin: <input type="time" id="${j}-m-d"> à <input type="time" id="${j}-m-f"> | 
+                Pause: <input type="time" id="${j}-p-d"> à <input type="time" id="${j}-p-f"> | 
+                AM: <input type="time" id="${j}-a-d"> à <input type="time" id="${j}-a-f">
+            </div>`;
+        });
+
+        let CONFIG = JSON.parse(localStorage.getItem('baron_config') || '{"regimes":[], "feries":[], "affectations":[], "exceptions":[], "heuresSupp":[], "evenements":[], "tempsPartiel":[]}');
+        if (!CONFIG.affectations) CONFIG.affectations = [];
+        if (!CONFIG.exceptions) CONFIG.exceptions = [];
+        if (!CONFIG.heuresSupp) CONFIG.heuresSupp = [];
+        if (!CONFIG.evenements) CONFIG.evenements = [];
+        if (!CONFIG.tempsPartiel) CONFIG.tempsPartiel = [];
+
+        function afficherSection(s) {
+            document.getElementById('app').style.display = (s === 'planning') ? 'flex' : 'none';
+            document.getElementById('recap').style.display = (s === 'recap') ? 'block' : 'none';
+            document.getElementById('parametres').style.display = (s === 'parametres') ? 'block' : 'none';
+            
+            document.getElementById('btn-planning').className = (s === 'planning') ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('btn-recap').className = (s === 'recap') ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('btn-parametres').className = (s === 'parametres') ? 'tab-btn active' : 'tab-btn';
+
+            if (s === 'planning') genererCalendrier();
+            if (s === 'recap') calculerTotalAnnuel();
+        }
+
+        const enMin = (t) => { let [hh, mm] = (t || "00:00").split(':').map(Number); return (hh || 0) * 60 + (mm || 0); };
+
+        function getRegimePourDate(dateStr, idx) {
+            let aff = CONFIG.affectations.find(a => a.date === dateStr);
+            if (aff) {
+                return CONFIG.regimes.find(r => r.code === aff.code) || null;
+            }
+            return CONFIG.regimes.find(r => r.type === "Travail") || CONFIG.regimes[0] || null;
+        }
+
+        function calculerHeuresMinutes(regime, jourNom) {
+            if (!regime || regime.type === "CA" || regime.type === "TR") return 0;
+            const h = regime.horaires ? regime.horaires[jourNom] : null;
+            if (!h || !h.m || !h.m.d) return 0;
+            return Math.max(0, enMin(h.m.f) - enMin(h.m.d)) + Math.max(0, enMin(h.a.f) - enMin(h.a.d));
+        }
+
+        function calculerTotalMensuel(dateObj) {
+            let totalMinutes = 0;
+            let joursDansMois = new Date(Date.UTC(dateObj.a, dateObj.m + 1, 0)).getUTCDate();
+            
+            for (let d = 1; d <= joursDansMois; d++) {
+                let dObj = new Date(Date.UTC(dateObj.a, dateObj.m, d));
+                let dateStr = dObj.toISOString().split('T')[0];
+                let idx = dObj.getUTCDay();
+                
+                let ferie = CONFIG.feries.find(f => f.date === dateStr);
+                let supp = CONFIG.heuresSupp.filter(s => s.date === dateStr);
+                let regime = getRegimePourDate(dateStr, idx);
+
+                if (idx !== 0 && idx !== 6 && !ferie) {
+                    if (regime) {
+                        if (regime.type === "CA" || regime.type === "TR") {
+                            // 0 heure pour les congés / RTT
+                        } else {
+                            totalMinutes += calculerHeuresMinutes(regime, joursIndex[idx]);
+                        }
+                    }
+                }
+                // Ajout des heures supp (peu importe le jour, avec majoration)
+                supp.forEach(s => {
+                    let [shh, smm] = (s.heures || "00:00").split(':').map(Number);
+                    let baseMin = (shh * 60) + (smm || 0);
+                    let coef = s.majoration ? parseFloat(s.majoration) : 1.25;
+                    totalMinutes += Math.round(baseMin * coef);
+                });
+            }
+            if (totalMinutes === 0) return "-";
+            return `${Math.floor(totalMinutes / 60)}h${String(totalMinutes % 60).padStart(2, '0')}`;
+        }
+
+        function calculerImpactMaladieSurRTT() {
+            if (!CONFIG || !CONFIG.affectations) return { heuresAbsence: 0, rttRestants: 14 };
+            const joursMaladie = CONFIG.affectations.filter(a => a && a.code && a.code.toUpperCase() === 'MAL');
+            let totalMinutesAbsenceMaladie = 0;
+            
+            joursMaladie.forEach(a => {
+                let dObj = new Date(a.date);
+                let idx = dObj.getUTCDay();
+                let regime = getRegimePourDate(a.date, idx);
+                
+                if (idx !== 0 && idx !== 6 && regime && regime.horaires && joursIndex[idx] && regime.horaires[joursIndex[idx]]) {
+                    let h = regime.horaires[joursIndex[idx]];
+                    if (h.m && h.m.f && h.m.d) {
+                        totalMinutesAbsenceMaladie += Math.max(0, enMin(h.m.f) - enMin(h.m.d)) + Math.max(0, enMin(h.a.f) - enMin(h.a.d));
+                    }
+                }
+            });
+
+            const seuilAbsenceMinutes = 113 * 60 + 30;
+            let rttInitialHeures = 14;
+            
+            if (totalMinutesAbsenceMaladie >= seuilAbsenceMinutes) {
+                let trancheDepassement = Math.floor(totalMinutesAbsenceMaladie / seuilAbsenceMinutes);
+                rttInitialHeures = Math.max(0, rttInitialHeures - trancheDepassement);
+            }
+
+            return {
+                heuresAbsence: Math.floor(totalMinutesAbsenceMaladie / 60),
+                rttRestants: rttInitialHeures
+            };
+        }
+
+       function calculerTotalAnnuel() {
+            let totalAnnuelMinutes = 0;
+            let joursPermanenceTotal = 0;
+            const sequence = [{m: 8, a: 2026}, {m: 9, a: 2026}, {m: 10, a: 2026}, {m: 11, a: 2026}, {m: 0, a: 2027}, {m: 1, a: 2027}, {m: 2, a: 2027}, {m: 3, a: 2027}, {m: 4, a: 2027}, {m: 5, a: 2027}, {m: 6, a: 2027}, {m: 7, a: 2027}];
+            
+            sequence.forEach(dateObj => {
+                let joursDansMois = new Date(Date.UTC(dateObj.a, dateObj.m + 1, 0)).getUTCDate();
+                for (let d = 1; d <= joursDansMois; d++) {
+                    let dObj = new Date(Date.UTC(dateObj.a, dateObj.m, d));
+                    let dateStr = dObj.toISOString().split('T')[0];
+                    let idx = dObj.getUTCDay();
+                    let ferie = CONFIG.feries.find(f => f.date === dateStr);
+                    let supp = CONFIG.heuresSupp.filter(s => s.date === dateStr);
+                    let regime = getRegimePourDate(dateStr, idx);
+
+                    if (idx !== 0 && idx !== 6 && !ferie) {
+                        if (regime) {
+                            if (regime.type !== "CA" && regime.type !== "TR") {
+                                let minJour = calculerHeuresMinutes(regime, joursIndex[idx]);
+                                if (minJour > 0) {
+                                    totalAnnuelMinutes += minJour;
+                                }
+                            }
+                            if (regime.code.toUpperCase() === 'PERM' || regime.type.toUpperCase() === 'PERM') {
+                                joursPermanenceTotal++;
+                            }
+                        }
+                    }
+                    supp.forEach(s => {
+                        let [shh, smm] = s.heures.split(':').map(Number);
+                        let baseMin = (shh * 60) + (smm || 0);
+                        let coef = s.majoration ? parseFloat(s.majoration) : 1.25;
+                        totalAnnuelMinutes += Math.round(baseMin * coef);
+                    });
+                }
+            });
+
+            const objectifHeures = 1589;
+            const objectifMinutes = objectifHeures * 60;
+            const diffMinutes = totalAnnuelMinutes - objectifMinutes;
+            
+            const diffHeures = Math.abs(Math.floor(diffMinutes / 60));
+            const diffMins = Math.abs(diffMinutes % 60);
+            const signe = diffMinutes >= 0 ? "+" : "-";
+            const libelleSolde = diffMinutes >= 0 ? "Solde positif (Heures supp. / à récupérer)" : "Solde négatif (Heures dues)";
+            const couleurSolde = diffMinutes >= 0 ? "#10b981" : "#ef4444";
+
+            const totalHeures = Math.floor(totalAnnuelMinutes / 60);
+            const resteMinutes = totalAnnuelMinutes % 60;
+            let message = (totalAnnuelMinutes/60 > objectifHeures) ? "Dépassement !" : (totalAnnuelMinutes/60 < objectifHeures) ? "Inférieur au réglementaire." : "Conforme.";
+            let styleColor = (totalAnnuelMinutes/60 > objectifHeures) ? "#ef4444" : (totalAnnuelMinutes/60 < objectifHeures) ? "#f59e0b" : "#10b981";
+
+            const totalLegaleCA = 25;
+            const joursVAC = CONFIG.affectations.filter(a => {
+                let d = new Date(a.date);
+                let idx = d.getUTCDay();
+                let estFerie = CONFIG.feries.find(f => f.date === a.date);
+                return a.code.toUpperCase() === 'VAC' && idx !== 0 && idx !== 6 && !estFerie;
+            }).length;
+
+            const joursTR = CONFIG.affectations.filter(a => {
+                let d = new Date(a.date);
+                let idx = d.getUTCDay();
+                let estFerie = CONFIG.feries.find(f => f.date === a.date);
+                return a.code.toUpperCase() === 'TR' && idx !== 0 && idx !== 6 && !estFerie;
+            }).length;
+
+            const totalExceptions = CONFIG.exceptions.reduce((sum, e) => sum + (e.valeur || 0), 0);
+            const alerteStyle = (totalExceptions > 12) ? 'color: #ef4444; font-weight: bold;' : '';
+            const totalEvenements = CONFIG.evenements ? CONFIG.evenements.length : 0;
+            const bilanMaladie = calculerImpactMaladieSurRTT();
+
+            const congesHorsEte = CONFIG.affectations.filter(a => {
+                let d = new Date(a.date);
+                let idx = d.getUTCDay();
+                let mois = d.getUTCMonth();
+                let estFerie = CONFIG.feries.find(f => f.date === a.date);
+                return a.code.toUpperCase() === 'VAC' && idx !== 0 && idx !== 6 && !estFerie && mois !== 6 && mois !== 7;
+            }).length;
+            const fractionnementAttribue = (congesHorsEte > 0) ? 2 : 0;
+
+            let bilanTempsPartielHTML = "";
+            if (CONFIG.tempsPartiel && CONFIG.tempsPartiel.length > 0) {
+                bilanTempsPartielHTML = "<br><strong style='color: #38bdf8;'>Périodes à Temps Partiel :</strong><br>";
+                CONFIG.tempsPartiel.forEach(tp => {
+                    let debutTp = new Date(tp.debut);
+                    let finTp = new Date(tp.fin);
+                    let quotiteNum = parseFloat(tp.quotite) / 100;
+                    let minutesTp = 0;
+
+                    let curr = new Date(debutTp);
+                    while (curr <= finTp) {
+                        let dateStr = curr.toISOString().split('T')[0];
+                        let idx = curr.getUTCDay();
+                        let ferie = CONFIG.feries.find(f => f.date === dateStr);
+                        let regime = getRegimePourDate(dateStr, idx);
+
+                        if (idx !== 0 && idx !== 6 && !ferie && regime && regime.type !== "CA" && regime.type !== "TR") {
+                            let jourMin = calculerHeuresMinutes(regime, joursIndex[idx]);
+                            minutesTp += jourMin * quotiteNum;
+                        }
+                        curr.setDate(curr.getDate() + 1);
+                    }
+
+                    let hTp = Math.floor(minutesTp / 60);
+                    let mTp = Math.round(minutesTp % 60);
+                    bilanTempsPartielHTML += `&bull; Du ${tp.debut} au ${tp.fin} (${tp.quotite}%) : <strong>${hTp}h${String(mTp).padStart(2, '0')}</strong><br>`;
+                });
+            }
+
+            document.getElementById('recap-content').innerHTML = `
+                <strong>Total annuel : ${totalHeures}h${String(resteMinutes).padStart(2, '0')}</strong><br>
+                <span style="color: ${styleColor}; font-weight: bold;">${message}</span><br>
+                <span style="color: ${couleurSolde}; font-weight: bold;">${libelleSolde} : ${signe}${diffHeures}h${String(diffMins).padStart(2, '0')}</span>
+                <div style="margin-top: 15px; border-top: 1px solid #334155; padding-top: 10px;">
+                    <strong>Compteurs :</strong><br>
+                    Jours de permanences (travaillés) : <strong>${joursPermanenceTotal} jours</strong><br>
+                    CA utilisés : ${joursVAC} / ${totalLegaleCA} (Solde : ${totalLegaleCA - joursVAC})<br>
+                    <strong>Jours de fractionnement :</strong> ${fractionnementAttribue} / 2 jours<br>
+                    RTT consommés : ${joursTR} jours<br>
+                    <strong>RTT volants restants :</strong> ${bilanMaladie.rttRestants}h (Absences maladie : ${bilanMaladie.heuresAbsence}h)<br>
+                    <span style="${alerteStyle}">
+                        <strong>Enfant malade : ${totalExceptions} / 12 demi-journées</strong><br>
+                        <strong>Événements de vie : ${totalEvenements} jours</strong>
+                    </span>
+                    ${bilanTempsPartielHTML}
+                </div>
+            `;
+        }
+
+        function getCouleurJour(dateStr) {
+            const d = new Date(dateStr);
+            const day = d.getUTCDay();
+
+            if (CONFIG.feries.find(f => f.date === dateStr)) return 'couleur-ferie';
+            if (day === 0 || day === 6) return 'couleur-weekend';
+
+            let aff = CONFIG.affectations.find(a => a.date === dateStr);
+            if (aff) {
+                let code = aff.code.toUpperCase();
+                if (code === 'VAC')  return 'couleur-ca';
+                if (code === 'TR')   return 'couleur-tr';
+                if (code === 'RTT')  return 'couleur-rtt';
+            }
+            return 'couleur-travail';
+        }
+
+        function genererCalendrier() {
+            const container = document.getElementById('app');
+            container.innerHTML = '';
+            const sequence = [{m: 8, a: 2026}, {m: 9, a: 2026}, {m: 10, a: 2026}, {m: 11, a: 2026}, {m: 0, a: 2027}, {m: 1, a: 2027}, {m: 2, a: 2027}, {m: 3, a: 2027}, {m: 4, a: 2027}, {m: 5, a: 2027}, {m: 6, a: 2027}, {m: 7, a: 2027}];
+            
+            sequence.forEach(obj => {
+                let col = document.createElement('div');
+                col.className = 'month-col';
+                col.innerHTML = `<div class="month-title">${moisNoms[obj.m]} ${obj.a}</div>`;
+                
+                let joursDansMois = new Date(Date.UTC(obj.a, obj.m + 1, 0)).getUTCDate();
+                for (let d = 1; d <= joursDansMois; d++) {
+                    let dObj = new Date(Date.UTC(obj.a, obj.m, d));
+                    let dateStr = dObj.toISOString().split('T')[0];
+                    let idx = dObj.getUTCDay();
+                    
+                    let ferie = CONFIG.feries.find(f => f.date === dateStr);
+                    let regime = getRegimePourDate(dateStr, idx);
+                    let supp = CONFIG.heuresSupp.filter(s => s.date === dateStr);
+
+                    let affichage = '-';
+                    if (idx === 0 || idx === 6 || ferie) {
+                        affichage = ferie ? ferie.nom : '-';
+                    } else if (regime) {
+                        if (regime.type === "CA" || regime.type === "TR") {
+                            affichage = regime.code;
+                        } else {
+                            let totalMin = calculerHeuresMinutes(regime, joursIndex[idx]);
+                            supp.forEach(s => {
+                                let [shh, smm] = s.heures.split(':').map(Number);
+                                let baseMin = (shh * 60) + (smm || 0);
+                                let coef = s.majoration ? parseFloat(s.majoration) : 1.25;
+                                totalMin += Math.round(baseMin * coef);
+                            });
+                            
+                            if (totalMin > 0) {
+                                affichage = `${Math.floor(totalMin / 60)}:${String(totalMin % 60).padStart(2, '0')}`;
+                            } else {
+                                affichage = '-';
+                            }
+                        }
+                    }
+                    
+                    let classe = getCouleurJour(dateStr); 
+                    col.innerHTML += `<div class="day-row ${classe}"><div class="day-num">${d}</div><div class="day-name">${joursNoms[idx]}</div><div class="day-type">${affichage}</div></div>`;
+                }
+                
+                col.innerHTML += `<div style="margin-top:10px; font-weight:bold; border-top:1px solid #334155; padding-top:6px; text-align:center; color:#f8fafc;">Total: ${calculerTotalMensuel(obj)}</div>`;
+                container.appendChild(col);
+            });
+        }
+
+        function majAffichage() {
+            const select = document.getElementById('select-regime-period');
+            if (select) {
+                select.innerHTML = '<option value="">-- Choisir --</option>';
+                CONFIG.regimes.forEach(r => select.innerHTML += `<option value="${r.code}">${r.nom}</option>`);
+            }
+
+            const elements = {
+                'liste-regimes': CONFIG.regimes.map((r, i) => `<li>${r.nom} <button onclick="chargerRegime(${i})">Modifier</button> <button onclick="supprimerRegime(${i})">X</button></li>`).join(''),
+                'liste-feries': CONFIG.feries.map((f, i) => `<li>${f.date}: ${f.nom} <button onclick="supprimerFerie(${i})">X</button></li>`).join(''),
+                'liste-exceptions': CONFIG.exceptions.map((e, i) => `<li>${e.date}: ${e.valeur} demi-journée(s) <button onclick="supprimerException(${i})">X</button></li>`).join(''),
+                'liste-supp': CONFIG.heuresSupp.map((s, i) => `<li>${s.date}: +${s.heures} (coef x${s.majoration}) <button onclick="supprimerSupp(${i})">X</button></li>`).join(''),
+                'liste-evenements': CONFIG.evenements ? CONFIG.evenements.map((e, i) => `<li>${e.date}: ${e.type} <button onclick="supprimerEvenement(${i})">X</button></li>`).join('') : '',
+                'liste-temps-partiel': CONFIG.tempsPartiel ? CONFIG.tempsPartiel.map((tp, i) => `<li>Du ${tp.debut} au ${tp.fin} : ${tp.quotite}% <button onclick="supprimerTempsPartiel(${i})">X</button></li>`).join('') : ''
+            };
+
+            for (let id in elements) {
+                let el = document.getElementById(id);
+                if (el) el.innerHTML = elements[id];
+            }
+
+            genererCalendrier();
+        }  
+
+        function ajouterTempsPartiel() {
+            const debut = document.getElementById('tp-debut').value;
+            const fin = document.getElementById('tp-fin').value;
+            const quotite = document.getElementById('tp-quotite').value;
+            
+            if (debut && fin) {
+                if (!CONFIG.tempsPartiel) CONFIG.tempsPartiel = [];
+                CONFIG.tempsPartiel.push({ debut, fin, quotite });
+                localStorage.setItem('baron_config', JSON.stringify(CONFIG));
+                majAffichage();
+                confirmerAction("Temps partiel enregistré !");
+            }
+        }
+
+        function supprimerTempsPartiel(i) {
+            CONFIG.tempsPartiel.splice(i, 1);
+            localStorage.setItem('baron_config', JSON.stringify(CONFIG));
+            majAffichage();
+        }
+
+        function ajouterHeuresSupp() {
+            const date = document.getElementById('date-supp').value;
+            const heures = document.getElementById('heures-supp').value;
+            const majoration = document.getElementById('type-majoration').value;
+            if (date && heures) {
+                CONFIG.heuresSupp.push({ date, heures, majoration });
+                localStorage.setItem('baron_config', JSON.stringify(CONFIG));
+                majAffichage();
+                confirmerAction("Heures supplémentaires ajoutées !");
+            }
+        }
+
+        function supprimerSupp(i) { CONFIG.heuresSupp.splice(i,1); localStorage.setItem('baron_config', JSON.stringify(CONFIG)); majAffichage(); }
+        
+        function ajouterRegime() {
+            const nom = document.getElementById('regime-nom').value;
+            const code = document.getElementById('regime-code').value;
+            const typeRadio = document.querySelector('input[name="regime-type"]:checked');
+            const type = typeRadio ? typeRadio.value : 'Travail';
+            
+            let horaires = {};
+            jours.forEach(j => {
+                horaires[j] = {
+                    m:{d:document.getElementById(`${j}-m-d`).value, f:document.getElementById(`${j}-m-f`).value},
+                    p:{d:document.getElementById(`${j}-p-d`).value, f:document.getElementById(`${j}-p-f`).value},
+                    a:{d:document.getElementById(`${j}-a-d`).value, f:document.getElementById(`${j}-a-f`).value}
+                };
+            });
+
+            if(nom && code) {
+                const index = CONFIG.regimes.findIndex(r => r.code === code);
+                const nouveauRegime = {nom, code, type, horaires};
+                if (index > -1) CONFIG.regimes[index] = nouveauRegime;
+                else CONFIG.regimes.push(nouveauRegime);
+                
+                localStorage.setItem('baron_config', JSON.stringify(CONFIG));
+                
+                majAffichage();
+                calculerTotalAnnuel();
+
+                confirmerAction("Régime enregistré et totaux actualisés !");
+            }
+        } 
+        
+        function chargerRegime(i) {
+            const r = CONFIG.regimes[i];
+            document.getElementById('regime-nom').value = r.nom;
+            document.getElementById('regime-code').value = r.code;
+            jours.forEach(j => {
+                document.getElementById(`${j}-m-d`).value = r.horaires[j].m.d;
+                document.getElementById(`${j}-m-f`).value = r.horaires[j].m.f;
+                document.getElementById(`${j}-p-d`).value = r.horaires[j].p.d;
+                document.getElementById(`${j}-p-f`).value = r.horaires[j].p.f;
+                document.getElementById(`${j}-a-d`).value = r.horaires[j].a.d;
+                document.getElementById(`${j}-a-f`).value = r.horaires[j].a.f;
+            });
+        }
+
+        function validerException() { 
+            const d = document.getElementById('date-exception').value; 
+            const val = parseFloat(document.getElementById('type-exception').value); 
+            if(d) { 
+                CONFIG.exceptions = CONFIG.exceptions.filter(e => e.date !== d); 
+                CONFIG.exceptions.push({date: d, valeur: val});
+                localStorage.setItem('baron_config', JSON.stringify(CONFIG)); 
+                majAffichage();
+                confirmerAction("Exception enregistrée !");
+            } 
+        }
+
+        function validerEvenement() {
+            const d = document.getElementById('date-evenement').value;
+            const type = document.getElementById('type-evenement').value || "Divers";
+            if(d) {
+                CONFIG.evenements.push({date: d, type: type});
+                localStorage.setItem('baron_config', JSON.stringify(CONFIG));
+                majAffichage();
+                confirmerAction("Événement enregistré !");
+            }
+        }
+
+        function supprimerEvenement(i) {
+            CONFIG.evenements.splice(i, 1);
+            localStorage.setItem('baron_config', JSON.stringify(CONFIG));
+            majAffichage();
+        }  
+
+        function affecterPeriode() { 
+            const code = document.getElementById('select-regime-period').value; 
+            const debut = new Date(document.getElementById('date-debut-p').value); 
+            const fin = new Date(document.getElementById('date-fin-p').value); 
+            if (!code || isNaN(debut.getTime())) return; 
+            
+            for (let d = new Date(debut); d <= fin; d.setDate(d.getDate() + 1)) { 
+                let dateStr = d.toISOString().split('T')[0]; 
+                CONFIG.affectations = CONFIG.affectations.filter(a => a.date !== dateStr); 
+                CONFIG.affectations.push({date: dateStr, code: code}); 
+            } 
+            localStorage.setItem('baron_config', JSON.stringify(CONFIG)); 
+            majAffichage();
+            confirmerAction("Régime ou période affecté !");
+        }
+
+        function supprimerRegime(i) { CONFIG.regimes.splice(i,1); localStorage.setItem('baron_config', JSON.stringify(CONFIG)); majAffichage(); }
+        function supprimerFerie(i) { CONFIG.feries.splice(i,1); localStorage.setItem('baron_config', JSON.stringify(CONFIG)); majAffichage(); }
+        function supprimerException(i) { CONFIG.exceptions.splice(i,1); localStorage.setItem('baron_config', JSON.stringify(CONFIG)); majAffichage(); }
+        
+        function ajouterFerie() { 
+            let d = document.getElementById('date-ferie').value; 
+            let n = prompt("Nom :"); 
+            if(d && n) { 
+                CONFIG.feries.push({date: d, nom: n}); 
+                localStorage.setItem('baron_config', JSON.stringify(CONFIG)); 
+                majAffichage();
+                setTimeout(() => { confirmerAction("Férié ajouté !"); }, 100);
+            } 
+        }
+
+        function exporterJSON() { 
+            let nomFichier = prompt("Nom du fichier de sauvegarde :", "config_baron.json");
+            if (!nomFichier) return; 
+            if (!nomFichier.endsWith('.json')) nomFichier += '.json'; 
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(CONFIG)); 
+            const a = document.createElement('a'); 
+            a.href = dataStr; 
+            a.download = nomFichier; 
+            a.click(); 
+            confirmerAction("Sauvegarde JSON réussie !");
+        }
+
+        function importerJSON(e) { 
+            const r = new FileReader(); 
+            r.onload = (e) => { CONFIG = JSON.parse(e.target.result); localStorage.setItem('baron_config', JSON.stringify(CONFIG)); majAffichage(); }; 
+            r.readAsText(e.target.files[0]); 
+        }
+
+        function copierJour(j) { 
+            const s = prompt("Copier depuis (Lundi, Mardi...) ?"); 
+            if (s && document.getElementById(s + "-m-d")) { 
+                ['m-d', 'm-f', 'p-d', 'p-f', 'a-d', 'a-f'].forEach(f => document.getElementById(j + '-' + f).value = document.getElementById(s + '-' + f).value); 
+            } 
+        }
+
+        function nettoyerAffectationsInvalides() {
+            CONFIG.affectations = CONFIG.affectations.filter(a => {
+                if (a.code.toUpperCase() !== 'VAC') return true;
+                let d = new Date(a.date);
+                let idx = d.getUTCDay();
+                let estFerie = CONFIG.feries.find(f => f.date === a.date);
+                return idx !== 0 && idx !== 6 && !estFerie;
+            });
+            localStorage.setItem('baron_config', JSON.stringify(CONFIG));
+            majAffichage();
+            confirmerAction("Nettoyage effectué !");
+        }
+
+        majAffichage();
+        afficherSection('planning');
+
+        function exporterExcelPlanning() {
+            let csvContent = "\uFEFFMois;Jour;Date;Type / Heures\n";
+            const sequence = [{m: 8, a: 2026}, {m: 9, a: 2026}, {m: 10, a: 2026}, {m: 11, a: 2026}, {m: 0, a: 2027}, {m: 1, a: 2027}, {m: 2, a: 2027}, {m: 3, a: 2027}, {m: 4, a: 2027}, {m: 5, a: 2027}, {m: 6, a: 2027}, {m: 7, a: 2027}];
+            
+            sequence.forEach(obj => {
+                let joursDansMois = new Date(Date.UTC(obj.a, obj.m + 1, 0)).getUTCDate();
+                for (let d = 1; d <= joursDansMois; d++) {
+                    let dObj = new Date(Date.UTC(obj.a, obj.m, d));
+                    let dateStr = dObj.toISOString().split('T')[0];
+                    let idx = dObj.getUTCDay();
+                    
+                    let ferie = CONFIG.feries.find(f => f.date === dateStr);
+                    let regime = getRegimePourDate(dateStr, idx);
+                    let supp = CONFIG.heuresSupp.filter(s => s.date === dateStr);
+
+                    let affichage = '-';
+                    if (idx === 0 || idx === 6 || ferie) {
+                        affichage = ferie ? ferie.nom : 'Repos/WE';
+                    } else if (regime) {
+                        if (regime.type === "CA" || regime.type === "TR") {
+                            affichage = regime.code;
+                        } else {
+                            let totalMin = calculerHeuresMinutes(regime, joursIndex[idx]);
+                            supp.forEach(s => {
+                                let [shh, smm] = s.heures.split(':').map(Number);
+                                let baseMin = (shh * 60) + (smm || 0);
+                                let coef = s.majoration ? parseFloat(s.majoration) : 1.25;
+                                totalMin += Math.round(baseMin * coef);
+                            });
+                            if (totalMin > 0) {
+                                affichage = `${Math.floor(totalMin / 60)}h${String(totalMin % 60).padStart(2, '0')}`;
+                            }
+                        }
+                    }
+                    
+                    csvContent += `${moisNoms[obj.m]} ${obj.a};${joursIndex[idx]};${dateStr};${affichage}\n`;
+                }
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "planning_annuel_baron.csv";
+            a.click();
+            confirmerAction("Export Planning Excel réussi !");
+        }
+
+        function exporterExcelRecap() {
+            let csvContent = "\uFEFFIndicateur;Valeur\n";
+            
+            let totalAnnuelMinutes = 0;
+            let joursPermanenceTotal = 0;
+            const sequence = [{m: 8, a: 2026}, {m: 9, a: 2026}, {m: 10, a: 2026}, {m: 11, a: 2026}, {m: 0, a: 2027}, {m: 1, a: 2027}, {m: 2, a: 2027}, {m: 3, a: 2027}, {m: 4, a: 2027}, {m: 5, a: 2027}, {m: 6, a: 2027}, {m: 7, a: 2027}];
+            sequence.forEach(dateObj => {
+                let joursDansMois = new Date(Date.UTC(dateObj.a, dateObj.m + 1, 0)).getUTCDate();
+                for (let d = 1; d <= joursDansMois; d++) {
+                    let dObj = new Date(Date.UTC(dateObj.a, dateObj.m, d));
+                    let dateStr = dObj.toISOString().split('T')[0];
+                    let idx = dObj.getUTCDay();
+                    let ferie = CONFIG.feries.find(f => f.date === dateStr);
+                    let supp = CONFIG.heuresSupp.filter(s => s.date === dateStr);
+                    let regime = getRegimePourDate(dateStr, idx);
+
+                    if (idx !== 0 && idx !== 6 && !ferie) {
+                        if (regime && regime.type !== "CA" && regime.type !== "TR") {
+                            let minJour = calculerHeuresMinutes(regime, joursIndex[idx]);
+                            if (minJour > 0) {
+                                totalAnnuelMinutes += minJour;
+                                joursPermanenceTotal++;
+                            }
+                        }
+                    }
+                    supp.forEach(s => {
+                        let [shh, smm] = s.heures.split(':').map(Number);
+                        let baseMin = (shh * 60) + (smm || 0);
+                        let coef = s.majoration ? parseFloat(s.majoration) : 1.25;
+                        totalAnnuelMinutes += Math.round(baseMin * coef);
+                    });
+                }
+            });
+            
+            let totalHeures = Math.floor(totalAnnuelMinutes / 60);
+            let resteMinutes = totalAnnuelMinutes % 60;
+            const objectifHeures = 1589;
+            let statut = (totalAnnuelMinutes/60 > objectifHeures) ? "Dépassement" : (totalAnnuelMinutes/60 < objectifHeures) ? "Inférieur au réglementaire" : "Conforme";
+
+            const diffMinutes = totalAnnuelMinutes - (objectifHeures * 60);
+            const diffHeures = Math.abs(Math.floor(diffMinutes / 60));
+            const diffMins = Math.abs(diffMinutes % 60);
+            const signe = diffMinutes >= 0 ? "+" : "-";
+
+            csvContent += `Objectif Annuel;${objectifHeures}h\n`;
+            csvContent += `Jours de permanences;${joursPermanenceTotal} jours\n`;
+            csvContent += `Total Annuel Réalisé;${totalHeures}h${String(resteMinutes).padStart(2, '0')}\n`;
+            csvContent += `Solde Net (Réalisé vs Objectif);${signe}${diffHeures}h${String(diffMins).padStart(2, '0')}\n`;
+            csvContent += `Statut Bilan;${statut}\n`;
+
+            const totalLegaleCA = 25;
+            const joursVAC = CONFIG.affectations.filter(a => {
+                let d = new Date(a.date);
+                let idx = d.getUTCDay();
+                let estFerie = CONFIG.feries.find(f => f.date === a.date);
+                return a.code.toUpperCase() === 'VAC' && idx !== 0 && idx !== 6 && !estFerie;
+            }).length;
+            csvContent += `CA Utilisés;${joursVAC} / ${totalLegaleCA} (Solde : ${totalLegaleCA - joursVAC})\n`;
+
+            const congesHorsEte = CONFIG.affectations.filter(a => {
+                let d = new Date(a.date);
+                let idx = d.getUTCDay();
+                let mois = d.getUTCMonth();
+                let estFerie = CONFIG.feries.find(f => f.date === a.date);
+                return a.code.toUpperCase() === 'VAC' && idx !== 0 && idx !== 6 && !estFerie && mois !== 6 && mois !== 7;
+            }).length;
+            const fractionnementAttribue = (congesHorsEte > 0) ? 2 : 0;
+            csvContent += `Jours de fractionnement;${fractionnementAttribue} / 2 jours\n`;
+
+            const joursTR = CONFIG.affectations.filter(a => {
+                let d = new Date(a.date);
+                let idx = d.getUTCDay();
+                let estFerie = CONFIG.feries.find(f => f.date === a.date);
+                return a.code.toUpperCase() === 'TR' && idx !== 0 && idx !== 6 && !estFerie;
+            }).length;
+            csvContent += `RTT Consommés;${joursTR} jours\n`;
+
+            const bilanMaladie = calculerImpactMaladieSurRTT();
+            csvContent += `RTT volants restants;${bilanMaladie.rttRestants}h (Absences maladie : ${bilanMaladie.heuresAbsence}h)\n`;
+
+            const totalExceptions = CONFIG.exceptions.reduce((sum, e) => sum + (e.valeur || 0), 0);
+            csvContent += `Enfant Malade;${totalExceptions} / 12 demi-journées\n`;
+
+            const totalEvenements = CONFIG.evenements ? CONFIG.evenements.length : 0;
+            csvContent += `Événements de vie;${totalEvenements} jours\n`;
+
+            if (CONFIG.tempsPartiel && CONFIG.tempsPartiel.length > 0) {
+                CONFIG.tempsPartiel.forEach(tp => {
+                    csvContent += `Temps Partiel (${tp.debut} au ${tp.fin});Quotité ${tp.quotite}%\n`;
+                });
+            }
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "recapitulatif_annuel_baron.csv";
+            a.click();
+            confirmerAction("Export Récapitulatif complet réussi !");
+        }
+
+        function exporterPDFCalendrier() {
+            afficherSection('planning');
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }    
+    </script>
+</body>
+</html>
