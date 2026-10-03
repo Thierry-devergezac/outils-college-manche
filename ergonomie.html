@@ -3,6 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>Plan d'Action — Santé, Sécurité & Prévention (Ergonomie)</title>
+<div class="fullscreen-container">
+            <button class="btn-fullscreen" onclick="basculerPleinEcran()">📺 Mode Plein Écran</button>
+        </div>
     <!-- Inclusion de la bibliothèque SheetJS (xlsx) pour générer un vrai .xlsx propre -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -163,9 +166,6 @@
     </style>
 </head>
 <body>
-<div class="fullscreen-container">
-    <button class="btn-fullscreen" onclick="basculerPleinEcran()">📺 Mode Plein Écran</button>
-</div>
     <div class="container">
         <!-- BOUTON RETOUR AU PORTAIL -->
         <div>
@@ -456,7 +456,6 @@
             };
             reader.readAsText(file);
         }
-        <script>
     function basculerPleinEcran() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(err => {
@@ -468,7 +467,6 @@
             }
         }
     }
-</script>
-    </script>
+</script>   
 </body>
 </html>
