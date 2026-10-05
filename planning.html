@@ -190,6 +190,22 @@
     </div>
 
     <div id="parametres" style="display:none;">
+        <!-- BLOC CHOIX DE L'ANNÉE DE DÉMARRAGE SCOLAIRE -->
+        <div style="border: 1px solid #3b82f6; padding: 15px; margin-bottom: 20px; background-color: #0f172a; border-radius: 8px;">
+            <h4 style="margin-top: 0; color: #38bdf8;"><i class="fa-solid fa-calendar-days"></i> Choix de l'Année de Référence :</h4>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <label for="select-annee" style="font-size: 14px;">Année scolaire de départ (Septembre) :</label>
+                <select id="select-annee" onchange="changerAnneeReference()" style="padding: 8px; width: 150px; font-weight: bold;">
+                    <option value="2025">2025 - 2026</option>
+                    <option value="2026" selected>2026 - 2027</option>
+                    <option value="2027">2027 - 2028</option>
+                    <option value="2028">2028 - 2029</option>
+                    <option value="2029">2029 - 2030</option>
+                </select>
+            </div>
+            <small style="color: #94a3b8; display: block; margin-top: 5px;">Le calendrier affichera l'année scolaire de Septembre (de l'année choisie) à Août (année suivante).</small>
+        </div>
+
         <h3>Configuration des Régimes (Semaine Type)</h3>
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
             <input type="text" id="regime-nom" placeholder="Nom du régime" style="flex: 1;">
@@ -303,12 +319,35 @@
             </div>`;
         });
 
-        let CONFIG = JSON.parse(localStorage.getItem('baron_config') || '{"regimes":[], "feries":[], "affectations":[], "exceptions":[], "heuresSupp":[], "evenements":[], "tempsPartiel":[]}');
+        let CONFIG = JSON.parse(localStorage.getItem('baron_config') || '{"anneeDepart": 2026, "regimes":[], "feries":[], "affectations":[], "exceptions":[], "heuresSupp":[], "evenements":[], "tempsPartiel":[]}');
+        if (!CONFIG.anneeDepart) CONFIG.anneeDepart = 2026;
         if (!CONFIG.affectations) CONFIG.affectations = [];
         if (!CONFIG.exceptions) CONFIG.exceptions = [];
         if (!CONFIG.heuresSupp) CONFIG.heuresSupp = [];
         if (!CONFIG.evenements) CONFIG.evenements = [];
         if (!CONFIG.tempsPartiel) CONFIG.tempsPartiel = [];
+
+        // Met à jour l'année sélectionnée dans le menu select au démarrage
+        document.getElementById('select-annee').value = CONFIG.anneeDepart;
+
+        function changerAnneeReference() {
+            const anneeSelect = parseInt(document.getElementById('select-annee').value);
+            CONFIG.anneeDepart = anneeSelect;
+            localStorage.setItem('baron_config', JSON.stringify(CONFIG));
+            genererCalendrier();
+            calculerTotalAnnuel();
+            confirmerAction(`Année basculée sur ${anneeSelect} - ${anneeSelect + 1} !`);
+        }
+
+        // Génère dynamiquement la séquence des 12 mois (Septembre année N à Août année N+1)
+        function getSequenceMois() {
+            const annee = CONFIG.anneeDepart;
+            return [
+                {m: 8, a: annee}, {m: 9, a: annee}, {m: 10, a: annee}, {m: 11, a: annee}, 
+                {m: 0, a: annee + 1}, {m: 1, a: annee + 1}, {m: 2, a: annee + 1}, {m: 3, a: annee + 1}, 
+                {m: 4, a: annee + 1}, {m: 5, a: annee + 1}, {m: 6, a: annee + 1}, {m: 7, a: annee + 1}
+            ];
+        }
 
         function afficherSection(s) {
             document.getElementById('app').style.display = (s === 'planning') ? 'flex' : 'none';
@@ -405,10 +444,10 @@
             };
         }
 
-       function calculerTotalAnnuel() {
+        function calculerTotalAnnuel() {
             let totalAnnuelMinutes = 0;
             let joursPermanenceTotal = 0;
-            const sequence = [{m: 8, a: 2026}, {m: 9, a: 2026}, {m: 10, a: 2026}, {m: 11, a: 2026}, {m: 0, a: 2027}, {m: 1, a: 2027}, {m: 2, a: 2027}, {m: 3, a: 2027}, {m: 4, a: 2027}, {m: 5, a: 2027}, {m: 6, a: 2027}, {m: 7, a: 2027}];
+            const sequence = getSequenceMois();
             
             sequence.forEach(dateObj => {
                 let joursDansMois = new Date(Date.UTC(dateObj.a, dateObj.m + 1, 0)).getUTCDate();
@@ -555,7 +594,7 @@
         function genererCalendrier() {
             const container = document.getElementById('app');
             container.innerHTML = '';
-            const sequence = [{m: 8, a: 2026}, {m: 9, a: 2026}, {m: 10, a: 2026}, {m: 11, a: 2026}, {m: 0, a: 2027}, {m: 1, a: 2027}, {m: 2, a: 2027}, {m: 3, a: 2027}, {m: 4, a: 2027}, {m: 5, a: 2027}, {m: 6, a: 2027}, {m: 7, a: 2027}];
+            const sequence = getSequenceMois();
             
             sequence.forEach(obj => {
                 let col = document.createElement('div');
@@ -823,7 +862,7 @@
 
         function exporterExcelPlanning() {
             let csvContent = "\uFEFFMois;Jour;Date;Type / Heures\n";
-            const sequence = [{m: 8, a: 2026}, {m: 9, a: 2026}, {m: 10, a: 2026}, {m: 11, a: 2026}, {m: 0, a: 2027}, {m: 1, a: 2027}, {m: 2, a: 2027}, {m: 3, a: 2027}, {m: 4, a: 2027}, {m: 5, a: 2027}, {m: 6, a: 2027}, {m: 7, a: 2027}];
+            const sequence = getSequenceMois();
             
             sequence.forEach(obj => {
                 let joursDansMois = new Date(Date.UTC(obj.a, obj.m + 1, 0)).getUTCDate();
@@ -874,7 +913,7 @@
             
             let totalAnnuelMinutes = 0;
             let joursPermanenceTotal = 0;
-            const sequence = [{m: 8, a: 2026}, {m: 9, a: 2026}, {m: 10, a: 2026}, {m: 11, a: 2026}, {m: 0, a: 2027}, {m: 1, a: 2027}, {m: 2, a: 2027}, {m: 3, a: 2027}, {m: 4, a: 2027}, {m: 5, a: 2027}, {m: 6, a: 2027}, {m: 7, a: 2027}];
+            const sequence = getSequenceMois();
             sequence.forEach(dateObj => {
                 let joursDansMois = new Date(Date.UTC(dateObj.a, dateObj.m + 1, 0)).getUTCDate();
                 for (let d = 1; d <= joursDansMois; d++) {
