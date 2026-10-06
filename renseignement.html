@@ -355,7 +355,7 @@
             </div>
             <div class="form-group">
                 <label>Spécialisation de l'agent :</label>
-                <select id="specialisationAgent">
+                <select id="specialisationAgent" onchange="gererFormationPolyvalente()">
                     <option value="Polyvalent / Autre">Polyvalent / Autre</option>
                     <option value="Installation électrique">Installation électrique</option>
                     <option value="Installation sanitaire et thermique">Installation sanitaire et thermique</option>
@@ -363,7 +363,12 @@
                     <option value="Revêtement et finition">Revêtement et finition</option>
                 </select>
             </div>
-            <div class="form-group" style="grid-column: span 2;">
+            <!-- Champ conditionnel pour la formation de départ si Polyvalent / Autre -->
+            <div class="form-group" id="groupeFormationPolyvalente">
+                <label>Formation d'origine / de départ :</label>
+                <input type="text" id="formationInitiale" placeholder="Préciser la formation initiale...">
+            </div>
+            <div class="form-group">
                 <label>Contrôlé par :</label>
                 <input type="text" id="controleur" value="de Vergezac">
             </div>
@@ -432,6 +437,18 @@
             { axe: "Maintenance améliorative", q: "Anticipez-vous les actions d'amélioration ou d'optimisation des installations ?", options: ["Planification et suivi de la maintenance améliorative et des travaux de fond."] }
         ];
 
+        function gererFormationPolyvalente() {
+            const spec = document.getElementById("specialisationAgent").value;
+            const groupe = document.getElementById("groupeFormationPolyvalente");
+            if (spec === "Polyvalent / Autre") {
+                groupe.style.display = "flex";
+            } else {
+                groupe.style.display = "none";
+                document.getElementById("formationInitiale").value = "";
+            }
+            updateAnalysis();
+        }
+
         function buildTable(dataToLoad = null) {
             const tbody = document.getElementById("criteriaTable");
             tbody.innerHTML = "";
@@ -482,6 +499,12 @@
             const rows = document.querySelectorAll("#criteriaTable tr");
             let observations = [];
 
+            const spec = document.getElementById("specialisationAgent").value;
+            const formation = document.getElementById("formationInitiale").value.trim();
+            if (spec === "Polyvalent / Autre" && formation) {
+                observations.push(`<strong>Spécificité Agent</strong> : Polyvalent / Autre [Formation d'origine : ${formation}]`);
+            }
+
             rows.forEach(row => {
                 const checks = row.querySelectorAll('.opt-check:checked');
                 const customInput = row.querySelector('.custom-resp-input');
@@ -525,6 +548,8 @@
             if (confirm("Voulez-vous vraiment réinitialiser toute la fiche ?")) {
                 document.getElementById("nomAgent").value = "";
                 document.getElementById("specialisationAgent").selectedIndex = 0;
+                document.getElementById("formationInitiale").value = "";
+                gererFormationPolyvalente();
                 document.getElementById("commentaireGlobal").value = "";
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById("dateControle").value = today;
@@ -561,6 +586,7 @@
                     dateControle: document.getElementById("dateControle").value,
                     nomAgent: document.getElementById("nomAgent").value,
                     specialisationAgent: document.getElementById("specialisationAgent").value,
+                    formationInitiale: document.getElementById("formationInitiale").value,
                     controleur: document.getElementById("controleur").value,
                     commentaireGlobal: document.getElementById("commentaireGlobal").value
                 },
@@ -592,6 +618,8 @@
                         document.getElementById("dateControle").value = data.header.dateControle || "";
                         document.getElementById("nomAgent").value = data.header.nomAgent || "";
                         document.getElementById("specialisationAgent").value = data.header.specialisationAgent || "Polyvalent / Autre";
+                        document.getElementById("formationInitiale").value = data.header.formationInitiale || "";
+                        gererFormationPolyvalente();
                         document.getElementById("controleur").value = data.header.controleur || "";
                         document.getElementById("commentaireGlobal").value = data.header.commentaireGlobal || "";
                     }
@@ -622,6 +650,7 @@
         window.onload = function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById("dateControle").value = today;
+            gererFormationPolyvalente();
             buildTable();
         };
     </script>
