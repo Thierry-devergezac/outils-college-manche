@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Fiche de Renseignement - Entretien & Terrain</title>
+    <title>Feuille de Suivi et d'Évaluation des Agents</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -20,7 +20,6 @@
             padding: 30px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
         }
-        /* Style des boutons en haut (Portail & Plein Écran) */
         .top-actions {
             display: flex;
             gap: 10px;
@@ -109,7 +108,7 @@
             padding: 10px;
             text-align: left;
             font-size: 13px;
-            vertical-align: top;
+            vertical-align: middle;
         }
         th {
             background-color: #003388;
@@ -122,21 +121,13 @@
             font-weight: bold;
             font-size: 15px;
         }
-        .checkbox-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            margin-bottom: 6px;
+        .sub-header {
+            background-color: #001a4d;
+            color: #a9c6ff;
+            font-weight: bold;
             font-size: 13px;
-            cursor: pointer;
         }
-        .checkbox-item input {
-            margin-top: 2px;
-            cursor: pointer;
-            width: 16px;
-            height: 16px;
-        }
-        input[type="text"], textarea {
+        input[type="text"], textarea, select.table-select {
             width: 100%;
             padding: 6px;
             background-color: #000822;
@@ -145,11 +136,10 @@
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 13px;
-            margin-top: 5px;
         }
         textarea {
             resize: vertical;
-            height: 70px;
+            height: 50px;
         }
         button {
             background-color: #ffaa00;
@@ -186,23 +176,21 @@
         .btn-danger:hover {
             background-color: #ff4444;
         }
-        .analysis-box {
-            background-color: #001a4d;
-            border: 2px solid #ffaa00;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 25px;
+        .footer-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
         }
-        .analysis-box h2 {
-            color: #ffaa00;
-            margin-top: 0;
-            font-size: 20px;
+        @media (max-width: 900px) {
+            .header-grid, .footer-sections {
+                grid-template-columns: 1fr;
+            }
         }
         #importFile {
             display: none;
         }
 
-        /* Style spécifique pour l'impression / export PDF */
         @media print {
             body {
                 background-color: #ffffff;
@@ -219,11 +207,11 @@
             .top-actions, .file-actions, .subtitle {
                 display: none;
             }
-            .header-grid {
+            .header-grid, .footer-sections {
                 background-color: #f1f1f1;
                 border: 1px solid #ccc;
             }
-            .form-group input, .form-group select {
+            .form-group input, .form-group select, input[type="text"], textarea, select.table-select {
                 background-color: #ffffff;
                 color: #000000;
                 border: 1px solid #ccc;
@@ -234,7 +222,7 @@
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-            .zone-header {
+            .zone-header, .sub-header {
                 background-color: #e0e0e0 !important;
                 color: #000000 !important;
                 -webkit-print-color-adjust: exact;
@@ -244,40 +232,20 @@
                 border: 1px solid #999;
                 color: #000000;
             }
-            input[type="text"], textarea {
-                background-color: #ffffff;
-                color: #000000;
-                border: none;
-                resize: none;
-            }
-            .analysis-box {
-                background-color: #f9f9f9;
-                border: 1px solid #ccc;
-                color: #000000;
-            }
-            .analysis-box h2, .analysis-box ul {
-                color: #000000 !important;
-            }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- BOUTONS HAUT DE PAGE -->
         <div class="top-actions">
-            <a href="index.html" class="btn-portail">
-                ⬅ Retour au Portail Central
-            </a>
-            <button class="btn-fullscreen" onclick="basculerPleinEcran()">
-                📺 Mode Plein Écran
-            </button>
+            <a href="index.html" class="btn-portail">⬅ Retour au Portail Central</a>
+            <button class="btn-fullscreen" onclick="basculerPleinEcran()">📺 Mode Plein Écran</button>
         </div>
 
-        <h1>Fiche de Renseignement - Entretien & Terrain</h1>
-        <p class="subtitle">Outil de recueil avec points à cocher, choix libres et calendrier</p>
+        <h1>Feuille de Suivi et d'Évaluation de la montée en compétences</h1>
+        <p class="subtitle">Direction des collèges, de la jeunesse et des sports — Service des collèges et de l'action éducative</p>
 
-        <!-- Barre d'actions -->
         <div class="file-actions">
             <button class="btn-pdf" onclick="exportToPdf()">📄 Exporter en PDF</button>
             <button class="btn-secondary" onclick="exportToJson()">💾 Exporter en JSON</button>
@@ -286,10 +254,9 @@
             <input type="file" id="importFile" accept=".json" onchange="importFromJson(event)">
         </div>
 
-        <!-- En-tête -->
         <div class="header-grid">
             <div class="form-group">
-                <label>Établissement (Collège) :</label>
+                <label>Établissement :</label>
                 <select id="etablissement">
                     <option value="Agon Coutainville Les Embruns">Agon Coutainville Les Embruns</option>
                     <option value="Avranches Challemel Lacour">Avranches Challemel Lacour</option>
@@ -346,252 +313,288 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Date du contrôle :</label>
-                <input type="date" id="dateControle">
-            </div>
-            <div class="form-group">
-                <label>Nom de l'agent :</label>
+                <label>Agent évalué :</label>
                 <input type="text" id="nomAgent" placeholder="Nom de l'agent...">
             </div>
             <div class="form-group">
-                <label>Spécialisation de l'agent :</label>
-                <select id="specialisationAgent" onchange="gererFormationPolyvalente()">
-                    <option value="Polyvalent / Autre">Polyvalent / Autre</option>
-                    <option value="Installation électrique">Installation électrique</option>
-                    <option value="Installation sanitaire et thermique">Installation sanitaire et thermique</option>
-                    <option value="Espace vert">Espace vert</option>
-                    <option value="Revêtement et finition">Revêtement et finition</option>
-                </select>
-            </div>
-            <!-- Champ conditionnel pour la formation de départ si Polyvalent / Autre -->
-            <div class="form-group" id="groupeFormationPolyvalente">
-                <label>Formation d'origine / de départ :</label>
-                <input type="text" id="formationInitiale" placeholder="Préciser la formation initiale...">
+                <label>En poste depuis le :</label>
+                <input type="date" id="enPosteDepuis">
             </div>
             <div class="form-group">
-                <label>Contrôlé par :</label>
-                <input type="text" id="controleur" value="de Vergezac">
+                <label>Secrétaire général(e) :</label>
+                <input type="text" id="secretaireGeneral" placeholder="Nom du secrétaire général...">
+            </div>
+            <div class="form-group">
+                <label>Référent(e) RSA :</label>
+                <input type="text" id="referentRsa" placeholder="Nom du référent...">
+            </div>
+            <div class="form-group">
+                <label>Evaluateur (tuteur) :</label>
+                <input type="text" id="evaluateur" placeholder="Nom de l'évaluateur...">
+            </div>
+            <div class="form-group">
+                <label>Date de l'évaluation :</label>
+                <input type="date" id="dateEvaluation">
+            </div>
+            <div class="form-group">
+                <label>Type d'agent / Suivi :</label>
+                <select id="typeAgentSuivi">
+                    <option value="CAED" selected>CAED (septembre à mi-juillet)</option>
+                    <option value="Agent polyvalent Titulaire">Agent polyvalent Titulaire</option>
+                    <option value="Agent polyvalent Stagiaire">Agent polyvalent Stagiaire</option>
+                    <option value="Agent polyvalent Remplaçant">Agent polyvalent Remplaçant</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Période / Échéance du Bilan :</label>
+                <select id="periodeBilan">
+                    <option value="1er Bilan (Octobre)" selected>1er Bilan (Octobre)</option>
+                    <option value="2ème Bilan (Janvier)">2ème Bilan (Janvier)</option>
+                    <option value="Bilan final (Juin)">Bilan final (Juin)</option>
+                    <option value="Autre">Autre</option>    
+                </select>
             </div>
         </div>
 
-        <!-- Tableau des questions clés -->
         <table>
-            <thead>
-                <tr>
-                    <th style="width: 20%;">Axe d'analyse / Compétence clé</th>
-                    <th style="width: 25%;">Questions clés à poser / Points de contrôle</th>
-                    <th style="width: 30%;">Précisions / Détails à creuser (Cochables & Libre)</th>
-                    <th style="width: 25%;">Commentaires / Observations</th>
-                </tr>
-            </thead>
-            <tbody id="criteriaTable">
-                <!-- Généré par script -->
+            <tbody id="evaluationTable">
             </tbody>
         </table>
 
-        <!-- Commentaire global -->
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label style="font-size: 16px; font-weight: bold; color: #ffaa00;">Synthèse globale de l'entretien :</label>
-            <textarea id="commentaireGlobal" placeholder="Remarques globales..."></textarea>
-        </div>
-
-        <!-- Synthèse automatique -->
-        <div class="analysis-box">
-            <h2>📊 Synthèse des éléments renseignés</h2>
-            <ul id="summaryObservations" style="margin: 0; padding-left: 20px; color: #a9c6ff;">
-                <!-- Dynamique -->
-            </ul>
+        <div class="footer-sections">
+            <div class="form-group">
+                <label style="font-size: 15px; font-weight: bold; color: #ffaa00;">Action à prévoir : (formation à la méthode, formation aux fondamentaux etc...)</label>
+                <textarea id="actionPrevoir" placeholder="Formation à la méthode, formation aux fondamentaux, etc..."></textarea>
+            </div>
+            <div class="form-group">
+                <label style="font-size: 15px; font-weight: bold; color: #ffaa00;">Indiquer ici vos suggestions :</label>
+                <textarea id="suggestions" placeholder="Suggestions de l'agent ou de l'évaluateur..."></textarea>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label style="font-size: 15px; font-weight: bold; color: #ffaa00;">Commentaires pour le service restauration :</label>
+                <textarea id="commRestauration" placeholder="Remarques particulières..."></textarea>
+            </div>
         </div>
     </div>
 
     <script>
-        const rowsDefinition = [
-            { type: "zone", title: "1. Pilotage & Organisation" },
-            { axe: "Écosystème & Acteurs concernés", q: "Quels sont vos interlocuteurs privilégiés en interne et en externe ?", options: ["Cartographie des flux, validation des priorités avec le gestionnaire et la direction du patrimoine."] },
-            { axe: "Planification & Arbitrages", q: "Comment structurez-vous vos journées et gérez-vous l'urgence face au préventif ?", options: ["Utilisation du planning annuel, lissage de la charge et arbitrage des priorités."] },
-            { axe: "Traçabilité & Outils de suivi", q: "Par quel support consignez-vous les interventions et le suivi des pannes ?", options: ["Tableaux de bord, fiches d'intervention, historique par bâtiment."] },
-
-            { type: "zone", title: "2. Moyens & Sécurité" },
-            { axe: "Gestion des stocks & Matériel", q: "Disposez-vous des ressources nécessaires et comment gérez-vous les consommables ?", options: ["Approvisionnement, seuils d'alerte, propreté et rangement des locaux/véhicules."] },
-            { axe: "Conformité & Registres de sécurité", q: "Quelles sont vos habilitations à jour et le suivi des registres réglementaires ?", options: ["Habilitations électriques, travail en hauteur, amiante, préparation de la commission de sécurité."] },
-
-            { type: "zone", title: "3. Technique - Électricité" },
-            { axe: "Maintenance courante et sécurité", q: "Quelle est votre méthodologie pour le diagnostic et le dépannage électrique ?", options: ["Habilitations, lecture de schémas, contrôle des tableaux et BAES."] },
-
-            { type: "zone", title: "3. Technique - Plomberie & Chauffage" },
-            { axe: "Conduite et petits dépannages", q: "Comment procédez-vous pour les recherches de fuites et la maintenance thermique ?", options: ["Remplacement à l'identique, débouchage, purge des radiateurs."] },
-
-            { type: "zone", title: "3. Technique - Équipements Spécifiques" },
-            { axe: "Installations techniques (CTA, VMC)", q: "Comment assurez-vous le suivi des installations de ventilation et de l'air ?", options: ["Vérification des CTA/VMC, nettoyage des filtres, contrôles spécifiques."] },
-
-            { type: "zone", title: "3. Technique - Bâtiment & Extérieurs" },
-            { axe: "Second œuvre & Espaces verts", q: "Quels menus travaux réalisez-vous en interne par rapport aux prestataires ?", options: ["Peinture, cloisons, serrurerie, entretien des extérieurs et tonte."] },
-
-            { type: "zone", title: "4. Reporting & Partenariats" },
-            { axe: "Suivi des prestataires externes", q: "Comment suivez-vous et réceptionnez-vous les travaux des entreprises extérieures ?", options: ["Validation des interventions, respect du cahier des charges, comptes-rendus."] },
-            { axe: "Rendre compte à la hiérarchie", q: "Quels indicateurs transmettez-vous au gestionnaire et au patrimoine ?", options: ["Capacité d'alerte, remontée des besoins d'investissement et bilans d'activité."] },
-
-            { type: "zone", title: "5. Planification & Inventaire technique" },
-            { axe: "Inventaire du matériel", q: "Disposez-vous de tout l'équipement nécessaire au bon fonctionnement et en bon état ?", options: ["Inventaire du matériel existant, identification des manques ou du matériel obsolète."] },
-            { axe: "Contrôles périodiques", q: "Comment planifiez-vous et suivez-vous les contrôles obligatoires et périodiques ?", options: ["Planification des contrôles périodiques (réglementaires, sécurité, technique)."] },
-            { axe: "Maintenance améliorative", q: "Anticipez-vous les actions d'amélioration ou d'optimisation des installations ?", options: ["Planification et suivi de la maintenance améliorative et des travaux de fond."] }
+        const sectionsData = [
+            {
+                zone: "1. Préparation du chariot",
+                colHeader: "Oui/Non",
+                items: [
+                    { label: "Chariot préparé à la prise de poste (produits consommables)", type: "oui_non" },
+                    { label: "Lavettes pré-imprégnées (dosage de l'eau contrôlé)", type: "oui_non" },
+                    { label: "Mop de lavage pré-imprégnées (dosage de l'eau et du produit contrôlé)", type: "oui_non" }
+                ]
+            },
+            {
+                zone: "2. Technique de nettoyage",
+                colHeader: "Respecté oui/non",
+                items: [
+                    { label: "Dépoussiérage du sol avec la mop verte (uni)", type: "oui_non" },
+                    { label: "Lavage du sol avec la grande mop rouge et verte", type: "oui_non" },
+                    { label: "Présence de la bande de réserve pour le lavage des sols", type: "oui_non" },
+                    { label: "Utilisation systématique du Kit Vitre pour les tables, tableaux et vitres", type: "oui_non" },
+                    { label: "Présence de la bande de réserve sur les tables", type: "oui_non" },
+                    { label: "Gestuelle kit vitre pour surfaces horizontales et verticales", type: "oui_non" },
+                    { label: "Respect du code couleur des lavettes", type: "oui_non" }
+                ]
+            },
+            {
+                zone: "3. Rendu visuel et hygiène",
+                colHeader: "Conforme oui/non",
+                items: [
+                    { label: "Sols : absence de traces (coins, angles)", type: "oui_non" },
+                    { label: "Points de contact (poignées, interrupteurs, rampes)", type: "oui_non" },
+                    { label: "Mobilier : absence de poussière, de taches pour les tables", type: "oui_non" },
+                    { label: "Sanitaires (détartrage, absence d'odeur)", type: "oui_non" }
+                ]
+            },
+            {
+                zone: "4. Utilisation du matériel mécanisé",
+                specialType: "materiel",
+                colHeader: "Oui/Non",
+                items: [
+                    { label: "Aspirateur / Tous types d'aspirateurs", freq: "Hebdomadaire", etat: "Bien", val: "Non" },
+                    { label: "Autolaveuse / Alternative à la monobrosse", freq: "Journalière", etat: "Bien", val: "Oui" },
+                    { label: "Balayeuse / Préau et zones grises (extérieurs)", freq: "Mensuelle", etat: "Très bien", val: "Non" },
+                    { label: "Nettoyeur vapeur / Hygiène sans produits chimique", freq: "Aux permanences", etat: "A perfectionner", val: "Oui" }
+                ]
+            },
+            {
+                zone: "5. Savoir être (en concertation avec le/la secrétaire général (e))",
+                colHeader: "Conforme oui/non",
+                items: [
+                    { label: "Qualité du travail réalisé (Minutie, détails, rigueur...)", type: "conforme" },
+                    { label: "Capacité à s'organiser et à respecter les délais", type: "conforme" },
+                    { label: "Capacité à trouver des solutions aux problèmes rencontrés - prise d'initiatives - autonomie", type: "conforme" },
+                    { label: "Capacité à travailler en équipe et faire preuve d'entraide", type: "conforme" },
+                    { label: "Respect de la hiérarchie et des consignes - Capacité à rendre compte", type: "conforme" },
+                    { label: "Acceptation des remarques, capacité à se remettre en question", type: "conforme" },
+                    { label: "Ponctualité - assiduité - Disponibilité", type: "conforme" }
+                ]
+            }
         ];
 
-        function gererFormationPolyvalente() {
-            const spec = document.getElementById("specialisationAgent").value;
-            const groupe = document.getElementById("groupeFormationPolyvalente");
-            if (spec === "Polyvalent / Autre") {
-                groupe.style.display = "flex";
-            } else {
-                groupe.style.display = "none";
-                document.getElementById("formationInitiale").value = "";
-            }
-            updateAnalysis();
-        }
+        const frequencesList = ["Journalière", "Hebdomadaire", "Mensuelle", "Aux permanences", "Annuelle", "Ne l'utilise pas"];
+        const etatsMatérielList = ["Bien", "Très bien", "A perfectionner","Sans Objet"];
 
-        function buildTable(dataToLoad = null) {
-            const tbody = document.getElementById("criteriaTable");
+        function buildTable(savedData = null) {
+            const tbody = document.getElementById("evaluationTable");
             tbody.innerHTML = "";
 
-            let itemIndex = 0;
-            rowsDefinition.forEach((item) => {
-                if (item.type === "zone") {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `<td colspan="4" class="zone-header">${item.title}</td>`;
-                    tbody.appendChild(tr);
-                } else {
-                    const sourceData = dataToLoad && dataToLoad[itemIndex] ? dataToLoad[itemIndex] : item;
-                    const tr = document.createElement("tr");
+            sectionsData.forEach((section, sIndex) => {
+                const trZone = document.createElement("tr");
+                trZone.innerHTML = `<td colspan="3" class="zone-header">${section.zone}</td>`;
+                tbody.appendChild(trZone);
 
-                    let optionsHtml = "";
-                    item.options.forEach((opt) => {
-                        let isChecked = false;
-                        if (sourceData.checkedOpts && sourceData.checkedOpts.includes(opt)) {
-                            isChecked = true;
-                        }
-                        optionsHtml += `
-                            <label class="checkbox-item">
-                                <input type="checkbox" class="opt-check" value="${opt}" ${isChecked ? 'checked' : ''} onchange="updateAnalysis()">
-                                <span>${opt}</span>
-                            </label>
-                        `;
-                    });
-
-                    tr.innerHTML = `
-                        <td><strong>${sourceData.axe}</strong></td>
-                        <td>${sourceData.q}</td>
-                        <td>
-                            <div class="options-container">
-                                ${optionsHtml}
-                            </div>
-                            <input type="text" class="custom-resp-input" placeholder="Autre choix / précision libre..." value="${sourceData.customResp || ''}" oninput="updateAnalysis()">
+                const trSub = document.createElement("tr");
+                if (section.specialType === "materiel") {
+                    trSub.innerHTML = `
+                        <td class="sub-header" style="width: 35%;">Critères :</td>
+                        <td class="sub-header" style="width: 15%;">Oui / Non :</td>
+                        <td class="sub-header" style="width: 50%;">
+                            <div style="font-weight:bold;">Fréquence</div>
+                            <div style="margin-top:2px; font-weight:bold;">Entretien du matériel</div>
+                            <div style="margin-top:3px; font-weight:normal; font-style:italic;">Observation</div>
                         </td>
-                        <td><textarea class="comm-input" placeholder="Commentaires..." oninput="updateAnalysis()">${sourceData.comm || ''}</textarea></td>
                     `;
-                    tbody.appendChild(tr);
-                    itemIndex++;
+                } else {
+                    trSub.innerHTML = `
+                        <td class="sub-header" style="width: 35%;">Critères :</td>
+                        <td class="sub-header" style="width: 15%;">${section.colHeader}</td>
+                        <td class="sub-header" style="width: 50%;">Observation</td>
+                    `;
                 }
-            });
-            updateAnalysis();
-        }
+                tbody.appendChild(trSub);
 
-        function updateAnalysis() {
-            const rows = document.querySelectorAll("#criteriaTable tr");
-            let observations = [];
+                section.items.forEach((item, iIndex) => {
+                    const tr = document.createElement("tr");
+                    const savedItem = savedData && savedData[sIndex] && savedData[sIndex][iIndex] ? savedData[sIndex][iIndex] : null;
 
-            const spec = document.getElementById("specialisationAgent").value;
-            const formation = document.getElementById("formationInitiale").value.trim();
-            if (spec === "Polyvalent / Autre" && formation) {
-                observations.push(`<strong>Spécificité Agent</strong> : Polyvalent / Autre [Formation d'origine : ${formation}]`);
-            }
+                    if (section.specialType === "materiel") {
+                        const valOuiNon = savedItem ? savedItem.val : item.val;
+                        const valFreq = savedItem ? savedItem.freq : item.freq;
+                        const valEtat = savedItem ? savedItem.etat : item.etat;
+                        const obs = savedItem ? savedItem.obs : "";
 
-            rows.forEach(row => {
-                const checks = row.querySelectorAll('.opt-check:checked');
-                const customInput = row.querySelector('.custom-resp-input');
-                const commInput = row.querySelector('.comm-input');
-                const axeCell = row.querySelector('td strong');
+                        let freqOptionsHtml = "";
+                        frequencesList.forEach(f => {
+                            freqOptionsHtml += `<option value="${f}" ${valFreq === f ? 'selected' : ''}>${f}</option>`;
+                        });
 
-                if (axeCell) {
-                    let checkedTexts = [];
-                    checks.forEach(c => checkedTexts.push(c.value));
-                    const custom = customInput ? customInput.value.trim() : "";
-                    const comm = commInput ? commInput.value.trim() : "";
+                        let etatOptionsHtml = "";
+                        etatsMatérielList.forEach(e => {
+                            etatOptionsHtml += `<option value="${e}" ${valEtat === e ? 'selected' : ''}>${e}</option>`;
+                        });
 
-                    if (checkedTexts.length > 0 || custom || comm) {
-                        let text = `<strong>${axeCell.textContent}</strong> : `;
-                        if (checkedTexts.length > 0) text += `[Coché: ${checkedTexts.join(', ')}] `;
-                        if (custom) text += `[Libre: ${custom}] `;
-                        if (comm) text += `<em>(Comm: ${comm})</em>`;
-                        observations.push(text);
+                        tr.innerHTML = `
+                            <td><strong>${item.label}</strong></td>
+                            <td>
+                                <select class="table-select mat-oui">
+                                    <option value="Oui" ${valOuiNon === 'Oui' ? 'selected' : ''}>Oui</option>
+                                    <option value="Non" ${valOuiNon === 'Non' ? 'selected' : ''}>Non</option>
+                                </select>
+                            </td>
+                            <td>
+                                <div style="margin-bottom:5px;">
+                                    <select class="table-select mat-freq">
+                                        ${freqOptionsHtml}
+                                    </select>
+                                </div>
+                                <div style="margin-bottom:5px;">
+                                    <select class="table-select mat-etat">
+                                        ${etatOptionsHtml}
+                                    </select>
+                                </div>
+                                <textarea class="mat-obs" placeholder="Observation...">${obs}</textarea>
+                            </td>
+                        `;
+                    } else if (item.type === "conforme") {
+                        const valStatus = savedItem ? savedItem.val : "Conforme";
+                        const obs = savedItem ? savedItem.obs : "";
+
+                        tr.innerHTML = `
+                            <td><strong>${item.label}</strong></td>
+                            <td>
+                                <select class="table-select standard-val">
+                                    <option value="Conforme" ${valStatus === 'Conforme' ? 'selected' : ''}>Conforme</option>
+                                    <option value="Non conforme" ${valStatus === 'Non conforme' ? 'selected' : ''}>Non conforme</option>
+                                    <option value="Non évalué" ${valStatus === 'Non évalué' ? 'selected' : ''}>Non évalué</option>
+                                </select>
+                            </td>
+                            <td><textarea class="standard-obs" placeholder="Observation...">${obs}</textarea></td>
+                        `;
+                    } else {
+                        const valStatus = savedItem ? savedItem.val : "Oui";
+                        const obs = savedItem ? savedItem.obs : "";
+
+                        tr.innerHTML = `
+                            <td><strong>${item.label}</strong></td>
+                            <td>
+                                <select class="table-select standard-val">
+                                    <option value="Oui" ${valStatus === 'Oui' ? 'selected' : ''}>Oui</option>
+                                    <option value="Non" ${valStatus === 'Non' ? 'selected' : ''}>Non</option>
+                                    <option value="Non évalué" ${valStatus === 'Non évalué' ? 'selected' : ''}>Non évalué</option>
+                                </select>
+                            </td>
+                            <td><textarea class="standard-obs" placeholder="Observation...">${obs}</textarea></td>
+                        `;
                     }
-                }
-            });
-
-            const ul = document.getElementById("summaryObservations");
-            ul.innerHTML = "";
-            if (observations.length === 0) {
-                ul.innerHTML = "<li>Aucune information saisie pour le moment.</li>";
-            } else {
-                observations.forEach(obs => {
-                    const li = document.createElement("li");
-                    li.innerHTML = obs;
-                    ul.appendChild(li);
+                    tbody.appendChild(tr);
                 });
-            }
-        }
-
-        function exportToPdf() {
-            window.print();
-        }
-
-        function resetForm() {
-            if (confirm("Voulez-vous vraiment réinitialiser toute la fiche ?")) {
-                document.getElementById("nomAgent").value = "";
-                document.getElementById("specialisationAgent").selectedIndex = 0;
-                document.getElementById("formationInitiale").value = "";
-                gererFormationPolyvalente();
-                document.getElementById("commentaireGlobal").value = "";
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById("dateControle").value = today;
-                buildTable();
-            }
+            });
         }
 
         function getFormData() {
-            const rows = document.querySelectorAll("#criteriaTable tr");
-            const criteriaList = [];
+            let sectionsResult = [];
+            let rowsArray = Array.from(document.querySelectorAll("#evaluationTable tr"));
+            let currentSecData = [];
 
-            rows.forEach(row => {
-                const checks = row.querySelectorAll('.opt-check:checked');
-                const customInput = row.querySelector('.custom-resp-input');
-                const commInput = row.querySelector('.comm-input');
-                const axeCell = row.querySelector('td strong');
+            rowsArray.forEach(tr => {
+                if(tr.querySelector('.zone-header')) {
+                    if(currentSecData.length > 0) sectionsResult.push(currentSecData);
+                    currentSecData = [];
+                } else if(!tr.querySelector('.sub-header')) {
+                    const sel = tr.querySelector('.table-select');
+                    const obsArea = tr.querySelector('textarea');
+                    const freqSelect = tr.querySelector('.mat-freq');
+                    const etatSelect = tr.querySelector('.mat-etat');
 
-                if (axeCell) {
-                    let checkedOpts = [];
-                    checks.forEach(c => checkedOpts.push(c.value));
-
-                    criteriaList.push({
-                        axe: axeCell.textContent,
-                        checkedOpts: checkedOpts,
-                        customResp: customInput ? customInput.value : "",
-                        comm: commInput ? commInput.value : ""
-                    });
+                    if(sel) {
+                        let itemData = { val: sel.value, obs: obsArea ? obsArea.value : "" };
+                        if(freqSelect) itemData.freq = freqSelect.value;
+                        if(etatSelect) itemData.etat = etatSelect.value;
+                        currentSecData.push(itemData);
+                    }
                 }
             });
+            if(currentSecData.length > 0) sectionsResult.push(currentSecData);
 
             return {
                 header: {
                     etablissement: document.getElementById("etablissement").value,
-                    dateControle: document.getElementById("dateControle").value,
                     nomAgent: document.getElementById("nomAgent").value,
-                    specialisationAgent: document.getElementById("specialisationAgent").value,
-                    formationInitiale: document.getElementById("formationInitiale").value,
-                    controleur: document.getElementById("controleur").value,
-                    commentaireGlobal: document.getElementById("commentaireGlobal").value
+                    enPosteDepuis: document.getElementById("enPosteDepuis").value,
+                    secretaireGeneral: document.getElementById("secretaireGeneral").value,
+                    referentRsa: document.getElementById("referentRsa").value,
+                    evaluateur: document.getElementById("evaluateur").value,
+                    dateEvaluation: document.getElementById("dateEvaluation").value,
+                    typeAgentSuivi: document.getElementById("typeAgentSuivi").value,
+                    periodeBilan: document.getElementById("periodeBilan").value
                 },
-                criteria: criteriaList
+                sections: sectionsResult,
+                footers: {
+                    actionPrevoir: document.getElementById("actionPrevoir").value,
+                    suggestions: document.getElementById("suggestions").value,
+                    commRestauration: document.getElementById("commRestauration").value
+                }
             };
+        }
+
+        function exportToPdf() {
+            window.print();
         }
 
         function exportToJson() {
@@ -599,7 +602,7 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `renseignement_${data.header.etablissement.replace(/\s+/g, '_')}.json`);
+            downloadAnchor.setAttribute("download", `suivi_${data.header.typeAgentSuivi.replace(/\s+/g, '_')}_${data.header.etablissement.replace(/\s+/g, '_')}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
@@ -614,17 +617,23 @@
                 try {
                     const data = JSON.parse(e.target.result);
                     if (data.header) {
-                        document.getElementById("etablissement").value = data.header.etablissement || "Coutances Jacques Prévert";
-                        document.getElementById("dateControle").value = data.header.dateControle || "";
+                        document.getElementById("etablissement").value = data.header.etablissement || "";
                         document.getElementById("nomAgent").value = data.header.nomAgent || "";
-                        document.getElementById("specialisationAgent").value = data.header.specialisationAgent || "Polyvalent / Autre";
-                        document.getElementById("formationInitiale").value = data.header.formationInitiale || "";
-                        gererFormationPolyvalente();
-                        document.getElementById("controleur").value = data.header.controleur || "";
-                        document.getElementById("commentaireGlobal").value = data.header.commentaireGlobal || "";
+                        document.getElementById("enPosteDepuis").value = data.header.enPosteDepuis || "";
+                        document.getElementById("secretaireGeneral").value = data.header.secretaireGeneral || "";
+                        document.getElementById("referentRsa").value = data.header.referentRsa || "";
+                        document.getElementById("evaluateur").value = data.header.evaluateur || "";
+                        document.getElementById("dateEvaluation").value = data.header.dateEvaluation || "";
+                        document.getElementById("typeAgentSuivi").value = data.header.typeAgentSuivi || "CAED";
+                        document.getElementById("periodeBilan").value = data.header.periodeBilan || "1er Bilan (Octobre)";
                     }
-                    if (data.criteria) {
-                        buildTable(data.criteria);
+                    if (data.sections) {
+                        buildTable(data.sections);
+                    }
+                    if (data.footers) {
+                        document.getElementById("actionPrevoir").value = data.footers.actionPrevoir || "";
+                        document.getElementById("suggestions").value = data.footers.suggestions || "";
+                        document.getElementById("commRestauration").value = data.footers.commRestauration || "";
                     }
                 } catch (error) {
                     alert("Erreur lors de l'import du fichier.");
@@ -634,11 +643,26 @@
             reader.readAsText(file);
         }
 
-        // Fonction magique pour basculer en plein écran
+        function resetForm() {
+            if (confirm("Voulez-vous vraiment réinitialiser toute la fiche de suivi ?")) {
+                document.getElementById("nomAgent").value = "";
+                document.getElementById("enPosteDepuis").value = "";
+                document.getElementById("secretaireGeneral").value = "";
+                document.getElementById("referentRsa").value = "";
+                document.getElementById("evaluateur").value = "";
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById("dateEvaluation").value = today;
+                document.getElementById("actionPrevoir").value = "";
+                document.getElementById("suggestions").value = "";
+                document.getElementById("commRestauration").value = "";
+                buildTable();
+            }
+        }
+
         function basculerPleinEcran() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
-                    console.error(`Erreur passage plein écran : ${err.message}`);
+                    console.error(`Erreur plein écran : ${err.message}`);
                 });
             } else {
                 if (document.exitFullscreen) {
@@ -649,11 +673,9 @@
 
         window.onload = function() {
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById("dateControle").value = today;
-            gererFormationPolyvalente();
+            document.getElementById("dateEvaluation").value = today;
             buildTable();
         };
     </script>
-
 </body>
 </html>
